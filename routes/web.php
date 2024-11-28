@@ -34,6 +34,8 @@ Route::get('/api/project_names',function() {
 Route::get('project_name', [Project_nameController::class, 'index']);
 Route::get('Drawing', [DrawingController::class, 'index']);
 
+
+
 //project_name  入力route
 Route::get('Project_name/create', [Project_nameController::class, 'create']);
 Route::post('Project_name', [Project_nameController::class, 'store'])->name('project_name.store');
