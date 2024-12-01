@@ -115,18 +115,43 @@
     <div class="form-container">
         <form method="post" action="{{ route('project_name.store') }}">
             @csrf
-
-            <!-- User ID入力 -->
-            <div class="form-group">
+            
+               <div class="form-group">
                 <label for="user_id">User ID:</label>
                 <input type="text" name="user_id" id="user_id" required>
             </div>
-
-            <!-- Project Name入力 -->
             <div class="form-group">
-                <label for="project_name">Project Name:</label>
+                <label for="project_name">プロジェクト名:</label>
                 <input type="text" name="project_name" id="project_name" required>
             </div>
+          
+            <div class="form-group">
+                <label for="finishing_table_name">仕上げ表Name:</label>
+                <input type="text" name="finishing_table_name" id="finishing_table_name" required >
+            </div>
+
+            <div class="form-group">
+                <label for="floor_plan_name">平面図Name:</label>
+                <input type="text" name="floor_plan_name" id="floor_plan_name" required >
+            </div>
+
+            <div class="form-group">
+                <label for="machinery_equipment_diagram_all_name">機械設備図AllName:</label>
+                <input type="text" name="machinery_equipment_diagram_all_name" id="machinery_equipment_diagram_all_name" required >
+            </div>
+
+            <div class="form-group">
+                <label for="bim_drawing_name">BIMName:</label>
+                <input type="text" name="bim_drawing_name" id="bim_drawing_name" required ">
+            </div>
+
+            <div class="form-group">
+                <label for="meeting_log_name">打合せ簿Name:</label>
+                <input type="text" name="meeting_log_name" id="meeting_log_name" required >
+            </div>
+
+
+
 
             <!-- 送信ボタン -->
             <div>

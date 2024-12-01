@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('meeting_logs', function (Blueprint $table) {
             $table->id();
             $table->integer('project_id');
-            $table->string('meeting_log_name');
+            $table->string('meeting_log_name')->nullable();
             $table->timestamps();
         });
     }

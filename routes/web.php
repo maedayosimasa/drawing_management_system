@@ -37,7 +37,7 @@ Route::get('Drawing', [DrawingController::class, 'index']);
 
 
 //project_name  入力route
-Route::get('Project_name/create', [Project_nameController::class, 'create']);
+Route::get('Project_name/create', [Project_nameController::class, 'create'])->name('project_name.create');
 Route::post('Project_name', [Project_nameController::class, 'store'])->name('project_name.store');
 
 //drawing 入力route

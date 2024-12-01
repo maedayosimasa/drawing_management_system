@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('structural_diagrams', function (Blueprint $table) {
             $table->id();
             $table->integer('drawing_id');
-            $table->string('floor_plan_name');
+            $table->string('floor_plan_name')->nullable();
             $table->timestamps();
         });
     }

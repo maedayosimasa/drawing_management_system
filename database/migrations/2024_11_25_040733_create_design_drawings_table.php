@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('design_drawings', function (Blueprint $table) {
             $table->id();
             $table->integer('drawing_id');
-            $table->string('finishing_table_name');
+            $table->string('finishing_table_name')->nullable();
             $table->timestamps();
         });
     }

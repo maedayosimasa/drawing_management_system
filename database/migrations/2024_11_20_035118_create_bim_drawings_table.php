@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('bim_drawings', function (Blueprint $table) {
             $table->id();
             $table->integer('drawing_id');
-            $table->string('bim_drawing_name');
+            $table->string('bim_drawing_name')->nullable();
             $table->timestamps();
         });
     }

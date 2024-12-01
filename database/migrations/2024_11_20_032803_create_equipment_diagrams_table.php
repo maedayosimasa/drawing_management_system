@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('equipment_diagrams', function (Blueprint $table) {
             $table->id();
             $table->integer('drawing_id');
-            $table->string('machinery_equipment_diagram_all_name');
+            $table->string('machinery_equipment_diagram_all_name')->nullable();
             $table->timestamps();
         });
     }
