@@ -10,6 +10,8 @@ use App\Models\Drawing;
 class Project_nameController extends Controller
 {
 
+  
+
     //一覧画面のテーブルすべてを取得
     public function index()
     {
@@ -26,6 +28,19 @@ class Project_nameController extends Controller
     // データ保存を行うメソッド
     public function store(Request $request)
     {
+
+        //バリデーションルール定義
+        $validatedDate = $request->validate([
+            'user_id' => 'nullable|integer|max:11',
+            'project_name' => 'required|string|max:255',
+            'finishing_table_name' => 'nullable|string|max:255',
+            'floor_plan_name' => 'nullable|string|max:255',
+            'machinery_equipment_diagram_all_name' => 'nullable|string|max:255',
+            'bim_drawing_naem' => 'nllable|string|max:255',
+            'meeting_log_name' => 'nullable|string|max:255',
+        ]);
+
+
         // トランザクション処理で一括保存
         DB::transaction(function () use ($request) {
             //$user_id = auth()->id(); // 認証ユーザーのIDを取得

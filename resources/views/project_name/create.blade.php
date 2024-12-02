@@ -127,27 +127,27 @@
           
             <div class="form-group">
                 <label for="finishing_table_name">仕上げ表Name:</label>
-                <input type="text" name="finishing_table_name" id="finishing_table_name" required >
+                <input type="text" name="finishing_table_name" id="finishing_table_name">
             </div>
 
             <div class="form-group">
                 <label for="floor_plan_name">平面図Name:</label>
-                <input type="text" name="floor_plan_name" id="floor_plan_name" required >
+                <input type="text" name="floor_plan_name" id="floor_plan_name">
             </div>
 
             <div class="form-group">
                 <label for="machinery_equipment_diagram_all_name">機械設備図AllName:</label>
-                <input type="text" name="machinery_equipment_diagram_all_name" id="machinery_equipment_diagram_all_name" required >
+                <input type="text" name="machinery_equipment_diagram_all_name" id="machinery_equipment_diagram_all_name">
             </div>
 
             <div class="form-group">
                 <label for="bim_drawing_name">BIMName:</label>
-                <input type="text" name="bim_drawing_name" id="bim_drawing_name" required ">
+                <input type="text" name="bim_drawing_name" id="bim_drawing_name">
             </div>
 
             <div class="form-group">
                 <label for="meeting_log_name">打合せ簿Name:</label>
-                <input type="text" name="meeting_log_name" id="meeting_log_name" required >
+                <input type="text" name="meeting_log_name" id="meeting_log_name">
             </div>
 
 
