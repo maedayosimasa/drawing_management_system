@@ -14,10 +14,15 @@ class Project_nameController extends Controller
     //検索searchメソッド
     public function search(Request $request) {
         $query = $request->input('query'); //検索クエリの取得
+        // dd($query);
+        if (empty($query)) {
+            return redirect()->back()->with('error', '検索キーワードを入力してください。');
+        }
         //部分一致検索を実行
-        $project_name = project_name::where('project_name', 'like', '%'. $query . '%')->get();
+        $project_name = project_name::where('project_name', 'like', '%' . $query . '%')->get();
+        //  dd($project_name);
         //検索ビューに渡す
-        return view('project_name.searct_results', compact('project_name' , 'query'));
+        return view('project_name.search', compact('project_name', 'query'));
     }
 
     //プロジェクト詳細を表示するshowメソッド

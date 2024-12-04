@@ -29,7 +29,7 @@ Route::get('/api/project_names',function() {
     return response()->json($project_names);//返すデータをJSON形式に変換
 });
 
-//seachtのルート設定
+//seachのルート設定
 Route::get('Project_name/search', [Project_nameController::class, 'search'])->name('project_name.search');
 
 
