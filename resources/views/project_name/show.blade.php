@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>プロジェクト新規作成一覧</title>
+    <title>プロジェクトの編集</title>
     <style>
         body {
             font-family: 'Georgia', serif; /* 高級感のある書体 */
@@ -97,67 +97,58 @@
     </style>
 </head>
 <body>
+    {{-- <h2>プロジェクトの編集</h2> --}}
+ 
 
-    <h2>プロジェクトの新規作成</h2>
-
-    <!-- エラーメッセージの表示 -->
-    {{-- @if ($errors->any()) --}}
-    {{--    <div class="error-message"> --}}
-    {{--        <ul> --}}
-    {{--            @foreach ($errors->all() as $error) --}}
-    {{--                <li>{{ $error }}</li> --}}
-    {{--            @endforeach --}}
-    {{--        </ul> --}}
-    {{--    </div> --}}
-    {{-- @endif --}}
-
-    <!-- フォーム -->
     <div class="form-container">
-        <form method="post" action="{{ route('project_name.store') }}">
-            {{-- <form method="post" action="{{ route('project_names.update', $project_name->id) }}"> --}}
+            <form method="post" action="{{ route('project_name.update', $project_name->id) }}">
             @csrf
-            {{-- //@method('PATCH') --}}
-                
-             <div class="form-group">
+            @method('put')    
+         
+            {{-- {{dump($project_name->id)}}  --}}
+               <div class="form-group">
                 <label for="user_id">User ID:</label>
                 <input type="text" name="user_id" id="user_id" required>
             </div>
             <div class="form-group">
                 <label for="project_name">プロジェクト名:</label>
-                <input type="text" name="project_name" id="project_name" required>
+                <input type="text" name="project_name" id="project_name" value="{{old('project_name', $project_name->project_name)}}" required>
             </div>
           
             <div class="form-group">
                 <label for="finishing_table_name">仕上げ表Name:</label>
-                <input type="text" name="finishing_table_name" id="finishing_table_name">
+                <input type="text" name="finishing_table_name" id="finishing_table_name" value="{{old('finishing_table_name',$project_name->drawing->design_drawing->finishing_table_name)}}">
             </div>
 
             <div class="form-group">
                 <label for="floor_plan_name">平面図Name:</label>
-                <input type="text" name="floor_plan_name" id="floor_plan_name">
+                <input type="text" name="floor_plan_name" id="floor_plan_name" value="{{old('floor_plan_name', $project_name->drawing->structural_diagram->floor_plan_name)}}">
             </div>
 
             <div class="form-group">
                 <label for="machinery_equipment_diagram_all_name">機械設備図AllName:</label>
-                <input type="text" name="machinery_equipment_diagram_all_name" id="machinery_equipment_diagram_all_name" >
+                <input type="text" name="machinery_equipment_diagram_all_name" id="machinery_equipment_diagram_all_name" value="{{old('machinery_equipment_diagram_all_name', $project_name->drawing->equipment_diagram->machinery_equipment_diagram_all_name)}}">
             </div>
 
             <div class="form-group">
                 <label for="bim_drawing_name">BIMName:</label>
-                <input type="text" name="bim_drawing_name" id="bim_drawing_name" >
+                <input type="text" name="bim_drawing_name" id="bim_drawing_name" value="{{old('bim_name', $project_name->drawing->bim_drawing->bim_drawing_name)}}">
             </div>
 
             <div class="form-group">
                 <label for="meeting_log_name">打合せ簿Name:</label>
-                <input type="text" name="meeting_log_name" id="meeting_log_name" >
+                <input type="text" name="meeting_log_name" id="meeting_log_name" value="{{old('meeting_log_name', $project_name->meeting_log->meeting_log_name)}}">
             </div>
 
-            <!-- 送信ボタン -->
+            <!-- 送信ボタン --><!-- 一括削除ボタン -->
             <div>
                 <button type="submit" class="submit-btn">更新</button>
+                {{-- <button type="submit" class="submit-btn" name="action" value="delete"  onclick="return confirm('選択したプロジェクトを削除してもよろしいですか？');">
+            一括削除
+            </button> --}}
             </div>
         </form>
-    </div>
+       </div>
 
 </body>
 </html>

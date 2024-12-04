@@ -114,7 +114,7 @@ a:hover {
 
             
             @foreach ($posts as $project_name)
-
+ 
                 {{-- <pre>{{ dd($project_name->drawing->design_drawing) }}</pre> --}}
 
                 <div class="project-card">
@@ -128,19 +128,19 @@ a:hover {
                    
                      <hr>
                     <p class="project-content">
-                        プロジェクトID: {{$project_name->drawing->project_name_id??'エラー'}}
+                        プロジェクトID: {{$project_name->drawing->project_name_id??'no_data'}}
                     </p>
                     <hr>
                     <p class="project-content">
-                        図面ID: {{$project_name->drawing->design_drawing->drawing_id??'エラー'}}
+                        図面ID: {{$project_name->drawing->design_drawing->drawing_id??'no_data'}}
                     </p>
                     <hr>
                     <p class="project-content">
-                        仕上げ表Name: {{$project_name->drawing->design_drawing->finishing_table_name??'エラー'}}
+                        仕上げ表Name: {{$project_name->drawing->design_drawing->finishing_table_name??'no_data'}}
                     </p>
                     <hr>
                     <p class="project-content">
-                        図面ID: {{$project_name->drawing->structural_diagram->drawing_id??'エラー'}}
+                        図面ID: {{$project_name->drawing->structural_diagram->drawing_id??'no_data'}}
                     </p>
                     <hr>
                     <p class="project-content">
@@ -148,35 +148,35 @@ a:hover {
                     </p>
                      <hr>
                     <p class="project-content">
-                        図面ID: {{$project_name->drawing->equipment_diagram->drawing_id??'エラー'}}
+                        図面ID: {{$project_name->drawing->equipment_diagram->drawing_id??'no_data'}}
                     </p>
                      <hr>
                     <p class="project-content">
-                        機械設備図AllName: {{$project_name->drawing->equipment_diagram->machinery_equipment_diagram_all_name??'エラー'}}
+                        機械設備図AllName: {{$project_name->drawing->equipment_diagram->machinery_equipment_diagram_all_name??'no_data'}}
                     </p>
                      <hr>
                     <p class="project-content">
-                        図面ID: {{$project_name->drawing->bim_drawing->drawing_id??'エラー'}}
+                        図面ID: {{$project_name->drawing->bim_drawing->drawing_id??'no_data'}}
                     </p>
                      <hr>
                     <p class="project-content">
-                        BimName: {{$project_name->drawing->bim_drawing->bim_drawing_name??'エラー'}}
+                        BimName: {{$project_name->drawing->bim_drawing->bim_drawing_name??'no_data'}}
                     </p>
                     <hr>
                     <p class="project-content">
-                        図面ID: {{$project_name->drawing->bim_drawing->drawing_id??'エラー'}}
+                        図面ID: {{$project_name->drawing->bim_drawing->drawing_id??'no_data'}}
                     </p>
                      <hr>
                     <p class="project-content">
-                        BimName: {{$project_name->drawing->bim_drawing->bim_drawing_name??'エラー'}}
+                        BimName: {{$project_name->drawing->bim_drawing->bim_drawing_name??'no_data'}}
                     </p>
                     <hr>
                     <p class="project-content">
-                        プロジェクトID: {{$project_name->meeting_log->project_id??'エラー'}}
+                        プロジェクトID: {{$project_name->meeting_log->project_id??'no_data'}}
                     </p>
                      <hr>
                     <p class="project-content">
-                        打合せ簿Name: {{$project_name->meeting_log->meeting_log_name??'エラー'}}
+                        打合せ簿Name: {{$project_name->meeting_log->meeting_log_name??'no_data'}}
                     </p>
                     
                 </div>

@@ -29,11 +29,23 @@ Route::get('/api/project_names',function() {
     return response()->json($project_names);//返すデータをJSON形式に変換
 });
 
+//seachtのルート設定
+Route::get('Project_name/search', [Project_nameController::class, 'search'])->name('project_name.search');
+
 
 //一覧画面のルート追加
 Route::get('project_name', [Project_nameController::class, 'index']);
 Route::get('Drawing', [DrawingController::class, 'index']);
 
+//showルート設定
+Route::get('Project_name/show/{id?}', [Project_nameController::class, 'show'])->name('project_name.show');
+//PUTルート設定
+Route::put('project_name/{id}', [Project_nameController::class, 'update'])->name('project_name.update');
+//Route::resource() を使用することで、Laravelは次のような標準的なルートを自動的に生成します（コントローラ内で対応するメソッドを実装する必要があります）
+//Route::resource('project_name', Project_nameController::class);
+
+// 一括削除のルート
+// Route::delete('project_name/show/{id?}', [Project_nameController::class, 'delete'])->name('project_name.show');
 
 
 //project_name  入力route
