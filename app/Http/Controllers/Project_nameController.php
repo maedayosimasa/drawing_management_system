@@ -15,15 +15,30 @@ class Project_nameController extends Controller
     public function search(Request $request) {
         $query = $request->input('query'); //検索クエリの取得
         // dd($query);
-        if (empty($query)) {
-            return redirect()->back()->with('error', '検索キーワードを入力してください。');
-        }
+     
         //部分一致検索を実行
         $project_name = project_name::where('project_name', 'like', '%' . $query . '%')->get();
         //  dd($project_name);
         //検索ビューに渡す
+           // if (empty($query)) {
+        //     return redirect()->back()->with('error', '検索キーワードを入力してください。');
+        // }
         return view('project_name.search', compact('project_name', 'query'));
     }
+
+
+     //selectメソッド
+    public function select(Request $request)
+    {
+        // フォームから選択されたプロジェクトIDを取得
+        $selectedProjectIds = $request->input('project_name_id');
+        // dd($selectedProjectIds);  // 送信された全データを確認
+        // 選択したプロジェクトIDを使用してデータを取得（必要に応じて）
+        $selectedProjects = project_name::whereIn('id', $selectedProjectIds)->get();
+
+        return view('project_name.index', ['project_name' => $selectedProjects]);
+    }
+
 
     //プロジェクト詳細を表示するshowメソッド
     public function show($id=4){

@@ -10,6 +10,7 @@ use App\Http\Controllers\Meeting_logController;
 use App\Http\Controllers\Equipment_diagramController;
 use App\Http\Controllers\Structural_diagramController;
 use App\Models\project_name;
+use Faker\Guesser\Name;
 use Illuminate\Http\Request;
 
 /*
@@ -31,10 +32,13 @@ Route::get('/api/project_names',function() {
 
 //seachのルート設定
 Route::get('Project_name/search', [Project_nameController::class, 'search'])->name('project_name.search');
-
+//slectのルート設定
+Route::post('Project_name/select', [Project_nameController::class, 'select'])->name('project_name.select');
+//indexへのルート設定
+Route::get('Project_name/index',[Project_nameController::class, 'index'])->name('project_name.index');
 
 //一覧画面のルート追加
-Route::get('project_name', [Project_nameController::class, 'index']);
+//Route::get('project_name', [Project_nameController::class, 'index']);
 Route::get('Drawing', [DrawingController::class, 'index']);
 
 //showルート設定

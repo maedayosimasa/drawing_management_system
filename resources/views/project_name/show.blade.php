@@ -97,7 +97,7 @@
     </style>
 </head>
 <body>
-    {{-- <h2>プロジェクトの編集</h2> --}}
+    <h2>プロジェクトの編集</h2>
  
 
     <div class="form-container">

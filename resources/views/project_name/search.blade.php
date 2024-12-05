@@ -134,14 +134,22 @@
 
     <!-- 検索結果表示 -->
     @if(isset($project_name) && $project_name->isNotEmpty())
+        <form action="{{ route('project_name.select') }}" method="post">
+                @csrf
         <div class="result-container">
-            <h2>検索結果:</h2>
+            <h4>検索結果:</h4>
             <ul>
-                @foreach($project_name as $project)
-                    <li>{{ $project->project_name }}</li>
-                @endforeach
+                @foreach($project_name as $project_name)
+                <li>
+                    <input type="checkbox" name="project_name_id[]" value="{{$project_name->id }}"> 
+                      {{ $project_name->project_name }}
+                 </li>
+                 <h2>  {{ $project_name->id??'idエラー' }}</h2>
+                  @endforeach
             </ul>
+             <button type="submit" class="submit-btn" name="action" value="select">選択</button>
         </div>
+        </form>
     @elseif(isset($query))
         <p>見つかりませんでした: "{{ $query }}".</p>
     @endif

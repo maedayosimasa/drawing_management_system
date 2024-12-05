@@ -106,18 +106,23 @@ a:hover {
 </head>
 <body>
     <div class="container">
-        <h2>プロジェクト一覧の作成</h2>
+        <h2>プロジェクト選択一覧</h2>
         <div>
             {{-- @if($posts->isEmpty())
             <p>データが存在しません。</p>
         @else --}}
-
+           <form action=""{{route('project_name.select')}}" method="post">
+            @csrf
+            @foreach ($project_name as $project_name)
             
-            @foreach ($posts as $project_name)
  
-                {{-- <pre>{{ dd($project_name->drawing->design_drawing) }}</pre> --}}
+                {{-- <pre>{{ dd($project_name) }}</pre> --}}
 
                 <div class="project-card">
+                        <li>
+                    <input type="checkbox" name="project_name_id[]" value="{{$project_name->id }}"> 
+                      {{ $project_name->project_name }}
+                 </li>
                     <h1 class="project-title">
                         ユーザーID: {{$project_name->user_id}}
                     </h1>
@@ -125,7 +130,7 @@ a:hover {
                     <p class="project-content">
                         プロジェクト名: {{$project_name->project_name}}
                     </p>
-                   
+               
                      <hr>
                     <p class="project-content">
                         プロジェクトID: {{$project_name->drawing->project_name_id??'no_data'}}
@@ -181,6 +186,8 @@ a:hover {
                     
                 </div>
             @endforeach
+            <button type="submit" class="btn">選択して表示</button>
+            </form>
         </div>
     </div>
     
