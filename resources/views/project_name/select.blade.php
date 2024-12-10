@@ -111,17 +111,18 @@ a:hover {
             {{-- @if($posts->isEmpty())
             <p>データが存在しません。</p>
         @else --}}
-          
-           {{-- <form action="{{route('project_name.show')}}" method="get"> --}}
-            {{-- @csrf --}}
-            @foreach ($posts as $project_name)
-            
+        
+           
+            @foreach ($project_name as $project_name)
+            <form method="post" action="{{route('project_name.show',['id' => $project_name ->id])}}" >
  
+            @csrf
                 {{-- <pre>{{ dd($project_name) }}</pre> --}}
 
                 <div class="project-card">
-                
-                    <input type="radio" name="project_name" value="{{$project_name->id }}" required> 
+                    <input type="hidden" name="project_name_id" value="{{ $project_name->id }}">
+                <button type="submit" >編集する</button>
+                   {{-- // <input type="radio" name="project_name_id" value="{{$project_name->id }}" required>  --}}
                       {{ $project_name->project_name }}
                  
                     <h1 class="project-title">
@@ -186,9 +187,11 @@ a:hover {
                     </p>
                     
                 </div>
+            </form>
             @endforeach
-    
-            {{-- </form> --}}
+             <!-- 操作を選択するボタン -->
+    {{-- <button type="submit" name="action" value="show" class="btn">詳細表示</button> --}}
+    {{-- <button type="submit" name="action" value="edit" class="btn">編集する</button> --}}
         </div>
     </div>
     

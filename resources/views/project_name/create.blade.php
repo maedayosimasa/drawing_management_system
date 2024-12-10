@@ -101,23 +101,21 @@
     <h2>プロジェクトの新規作成</h2>
 
     <!-- エラーメッセージの表示 -->
-    {{-- @if ($errors->any()) --}}
-    {{--    <div class="error-message"> --}}
-    {{--        <ul> --}}
-    {{--            @foreach ($errors->all() as $error) --}}
-    {{--                <li>{{ $error }}</li> --}}
-    {{--            @endforeach --}}
-    {{--        </ul> --}}
-    {{--    </div> --}}
-    {{-- @endif --}}
+    @if ($errors->any())
+       <div class="error-message">
+           <ul>
+               @foreach ($errors->all() as $error)
+                   <li>{{ $error }}</li>
+               @endforeach
+           </ul>
+       </div>
+    @endif
 
     <!-- フォーム -->
     <div class="form-container">
         <form method="post" action="{{ route('project_name.store') }}">
-            {{-- <form method="post" action="{{ route('project_names.update', $project_name->id) }}"> --}}
-            @csrf
-            {{-- //@method('PATCH') --}}
-                
+             @csrf
+                           
              <div class="form-group">
                 <label for="user_id">User ID:</label>
                 <input type="text" name="user_id" id="user_id" required>

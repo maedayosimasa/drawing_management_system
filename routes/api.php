@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Models\project_name;
+use App\Http\Controllers\Project_nameController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,6 +28,9 @@ Route::get('/project_names', function() {
     )->get();
     return response()->json($project_names);// JSONでデータを返す
 });
+
+Route::get('Project_name', [Project_nameController::class, 'index']);
+Route::post('Project_name', [Project_nameController::class, 'store']);
 
 
 

@@ -28,21 +28,26 @@ class Project_nameController extends Controller
 
 
      //selectメソッド
-    public function select(Request $request)
+     public function select(Request $request)
     {
         // フォームから選択されたプロジェクトIDを取得
         $selectedProjectIds = $request->input('project_name_id');
         // dd($selectedProjectIds);  // 送信された全データを確認
         // 選択したプロジェクトIDを使用してデータを取得（必要に応じて）
-        $selectedProjects = project_name::whereIn('id', $selectedProjectIds)->get();
-
-        return view('project_name.index', ['project_name' => $selectedProjects]);
+        $project_name = project_name::whereIn('id', $selectedProjectIds)->get();
+         //dd($project_name);
+        // return view('project_name.select', ['project_name' => $selectedProjects]);
+        return view('project_name.select', compact('project_name'));
     }
 
 
     //プロジェクト詳細を表示するshowメソッド
-    public function show($id=4){
+    public function show(Request $request
+){
+        $id = $request->query('id');
+         //dd($request->query('id'));  // クエリパラメータの 'id' を取得
         $project_name = project_name::findOrFail($id);
+       // dd($id);
         return view('project_name.show', compact('project_name'));
     }
 
@@ -59,7 +64,7 @@ class Project_nameController extends Controller
             'meeting_log_name' => 'nullable|string|max:255',
         ]);
 
-        $project_name = project_name::findOrFail($id=4);
+        $project_name = project_name::findOrFail($id);
 
             // トランザクション処理で一括保存
         DB::transaction(function () use ($validatedData, $project_name) {
@@ -134,9 +139,11 @@ class Project_nameController extends Controller
         return view('project_name.index', compact('posts'));
     }
 
+    
     // データ保存を行うメソッド
     public function store(Request $request)
     {
+       // $request->json()->all();
 
         //バリデーションルール定義
         $validatedDate = $request->validate([
@@ -152,7 +159,7 @@ class Project_nameController extends Controller
 
         // トランザクション処理で一括保存
         DB::transaction(function () use ($validatedDate) {
-            //$user_id = auth()->id(); // 認証ユーザーのIDを取得
+            $user_id = auth()->id(); // 認証ユーザーのIDを取得
             // プロジェクトデータを保存
             $project_name = project_name::create([
                 'user_id' =>  $validatedDate['user_id'],
@@ -191,7 +198,9 @@ class Project_nameController extends Controller
             ]);
         });
         // 保存後のリダイレクト
-        return redirect()->route('project_name.create')->with('success', '図面と書類が作成されました！');
+        // return redirect()->route('project_name.create')->with('success', '図面と書類が作成されました！');
+        return response()->json(['message' => '図面と書類が作成されました！'], 201);
+
     }
 
 

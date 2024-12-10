@@ -30,6 +30,9 @@ Route::get('/api/project_names',function() {
     return response()->json($project_names);//返すデータをJSON形式に変換
 });
 
+
+
+
 //seachのルート設定
 Route::get('Project_name/search', [Project_nameController::class, 'search'])->name('project_name.search');
 //slectのルート設定
@@ -38,11 +41,12 @@ Route::post('Project_name/select', [Project_nameController::class, 'select'])->n
 Route::get('Project_name/index',[Project_nameController::class, 'index'])->name('project_name.index');
 
 //一覧画面のルート追加
-//Route::get('project_name', [Project_nameController::class, 'index']);
+Route::get('project_name', [Project_nameController::class, 'index']);
 Route::get('Drawing', [DrawingController::class, 'index']);
 
 //showルート設定
-Route::get('Project_name/show/{id?}', [Project_nameController::class, 'show'])->name('project_name.show');
+Route::get('Project_name/show/{id}', [Project_nameController::class, 'show'])->name('project_name.show');
+Route::post('Project_name/show', [Project_nameController::class, 'show'])->name('project_name.show');
 //PUTルート設定
 Route::put('project_name/{id}', [Project_nameController::class, 'update'])->name('project_name.update');
 //Route::resource() を使用することで、Laravelは次のような標準的なルートを自動的に生成します（コントローラ内で対応するメソッドを実装する必要があります）

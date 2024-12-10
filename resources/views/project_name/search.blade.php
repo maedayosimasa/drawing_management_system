@@ -141,8 +141,8 @@
             <ul>
                 @foreach($project_name as $project_name)
                 <li>
-                    <input type="checkbox" name="project_name_id[]" value="{{$project_name->id }}"> 
-                      {{ $project_name->project_name }}
+                    <input type="checkbox" name="project_name_id[]" value="{{$project_name->id}}"> 
+                     {{ $project_name->project_name }}
                  </li>
                  <h2>  {{ $project_name->id??'idエラー' }}</h2>
                   @endforeach
