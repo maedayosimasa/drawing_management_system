@@ -54,6 +54,8 @@ class Project_nameController extends Controller
     //部分変更 updateメソッド(編集)
     public function update(Request $request, $id)
     {
+        // dd($id);
+        //$id = $request->request('id');
         //バリデーション
         $validatedData = $request->validate([
             'project_name' => 'nullable|string|max:255',
@@ -63,7 +65,8 @@ class Project_nameController extends Controller
             'bim_drawing_name' => 'nullable|string|max:255',
             'meeting_log_name' => 'nullable|string|max:255',
         ]);
-
+        
+         //dd($id);
         $project_name = project_name::findOrFail($id);
 
             // トランザクション処理で一括保存
@@ -105,9 +108,7 @@ class Project_nameController extends Controller
                 'meeting_log_name' => $validatedData['meeting_log_name'] ?? null,
             ]);
         });
-        // 保存後のリダイレクト
-        return redirect()->route('project_name.show')->with('success', '図面と書類が更新されました！');
-    
+        return response()->json(['message' => '図面と書類が作成されました！'], 201);
         }
 
     // 一括削除処理
@@ -198,8 +199,9 @@ class Project_nameController extends Controller
             ]);
         });
         // 保存後のリダイレクト
-        // return redirect()->route('project_name.create')->with('success', '図面と書類が作成されました！');
-        return response()->json(['message' => '図面と書類が作成されました！'], 201);
+       // return redirect()->route('project_name.create')->with('success', '図面と書類が作成されました！');
+        return response()->json(['message' =>
+        '図面と書類が作成されました！', 'project_name' => $validatedDate['project_name'],], 201);
 
     }
 

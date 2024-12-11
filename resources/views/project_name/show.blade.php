@@ -103,9 +103,9 @@
     <div class="form-container">
             <form method="post" action="{{ route('project_name.update', $project_name->id) }}">
             @csrf
-            {{-- @method('put')     --}}
+            @method('put')    
          
-            {{dump($project_name->id)}} 
+            {{-- {{dump($project_name->id)}}  --}}
                <div class="form-group">
                 <label for="user_id">User ID:</label>
                 <input type="text" name="user_id" id="user_id" required>
