@@ -41,7 +41,7 @@ Route::post('Project_name/select', [Project_nameController::class, 'select'])->n
 Route::get('Project_name/index',[Project_nameController::class, 'index'])->name('project_name.index');
 
 //一覧画面のルート追加
-Route::get('project_name', [Project_nameController::class, 'index']);
+Route::get('Project_name', [Project_nameController::class, 'index']);
 Route::get('Drawing', [DrawingController::class, 'index']);
 
 //showルート設定

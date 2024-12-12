@@ -6,48 +6,119 @@ use Illuminate\Http\Request;
 use App\Models\project_name;
 use Illuminate\Support\Facades\DB;
 use App\Models\Drawing;
+use App\Models\File;
+use Illuminate\Support\Facades\Log;
 
 
 class Project_nameController extends Controller
 {
 
+    //uplodad,downloadメソッド
+    public function upload(Request $request)
+    {
+        // リクエストデータの確認
+        dd($request->all());
+        var_dump($request->file());
+        //バリデーション
+        $validatedData = $request->validate([
+            'project_name' => 'required|mimes:pdf|max:2048', // 最大2MB
+            'finishing_table_name' => 'required|mimes:pdf|max:2048',
+            'floor_plan_name' => 'required|mimes:pdf|max:2048',
+            'machinery_equipment_diagram_all_name' => 'required|mimes:pdf|max:2048',
+            'bim_drawing_name' => 'required|mimes:pdf|max:2048',
+            'meeting_log_name' => 'required|mimes:pdf|max:2048',
+        ]);
+
+        // ファイルの保存
+        $filePaths = [];
+        $fileFields = [
+            'project_name',
+            'finishing_table_name',
+            'floor_plan_name',
+            'machinery_equipment_diagram_all_name',
+            'bim_drawing_name',
+            'meeting_log_name'
+        ];
+
+        // 各ファイルをストレージに保存
+        foreach ($fileFields as $field) {
+            if ($request->hasFile($field)) {
+                $filePaths[$field] = $request->file($field)->store('pdfs', 'public');
+            }
+        }
+
+        // データベースに保存
+        $file = new File();
+        // 各フィールドに対応するファイルパスを保存
+        foreach ($fileFields as $field) {
+        $file->project_name = isset($filePaths['project_name']) ? $filePaths['project_name'] : null;
+        $file->finishing_table_name = isset($filePaths['finishing_table_name']) ? $filePaths['finishing_table_name'] : null;
+        $file->floor_plan_name = isset($filePaths['floor_plan_name']) ? $filePaths['floor_plan_name'] : null;
+        $file->machinery_equipment_diagram_all_name = isset($filePaths['machinery_equipment_diagram_all_name']) ? $filePaths['machinery_equipment_diagram_all_name'] : null;
+        $file->bim_drawing_name = isset($filePaths['bim_drawing_name']) ? $filePaths['bim_drawing_name'] : null;
+        $file->meeting_log_name = isset($filePaths['meeting_log_name']) ? $filePaths['meeting_log_name'] : null;
+        }
+           // データベースに保存
+        $file->save();
+
+        // ダウンロード用リンクの返却
+        return response()->json([
+            'message' => 'File uploaded successfully',
+            'file_id' => $file->id,
+            'download_url' => route('download', ['id' => $file->id]),
+        ]);
+    }
+    public function download($id)
+    {
+        $file = File::findOrFail($id);
+
+        $filePath = storage_path('app/public/' . $file->project_name); // 適切なフィールドを指定
+        if (!file_exists($filePath)) {
+            return response()->json(['message' => 'File not found'], 404);
+        }
+
+        return response()->download($filePath);
+    }
+
     //検索searchメソッド
-    public function search(Request $request) {
+    public function search(Request $request)
+    {
         $query = $request->input('query'); //検索クエリの取得
         // dd($query);
-     
+
         //部分一致検索を実行
         $project_name = project_name::where('project_name', 'like', '%' . $query . '%')->get();
         //  dd($project_name);
         //検索ビューに渡す
-           // if (empty($query)) {
+        // if (empty($query)) {
         //     return redirect()->back()->with('error', '検索キーワードを入力してください。');
         // }
         return view('project_name.search', compact('project_name', 'query'));
     }
 
 
-     //selectメソッド
-     public function select(Request $request)
+    //selectメソッド
+    public function select(Request $request)
     {
         // フォームから選択されたプロジェクトIDを取得
         $selectedProjectIds = $request->input('project_name_id');
         // dd($selectedProjectIds);  // 送信された全データを確認
         // 選択したプロジェクトIDを使用してデータを取得（必要に応じて）
         $project_name = project_name::whereIn('id', $selectedProjectIds)->get();
-         //dd($project_name);
+        //dd($project_name);
         // return view('project_name.select', ['project_name' => $selectedProjects]);
         return view('project_name.select', compact('project_name'));
     }
 
 
     //プロジェクト詳細を表示するshowメソッド
-    public function show(Request $request
-){
+    public function show(
+        Request $request
+    ) {
         $id = $request->query('id');
-         //dd($request->query('id'));  // クエリパラメータの 'id' を取得
+        //dd($request->query('id'));  // クエリパラメータの 'id' を取得
         $project_name = project_name::findOrFail($id);
-       // dd($id);
+        // dd($id);
         return view('project_name.show', compact('project_name'));
     }
 
@@ -65,17 +136,17 @@ class Project_nameController extends Controller
             'bim_drawing_name' => 'nullable|string|max:255',
             'meeting_log_name' => 'nullable|string|max:255',
         ]);
-        
-         //dd($id);
+
+        //dd($id);
         $project_name = project_name::findOrFail($id);
 
-            // トランザクション処理で一括保存
+        // トランザクション処理で一括保存
         DB::transaction(function () use ($validatedData, $project_name) {
             //$user_id = auth()->id(); // 認証ユーザーのIDを取得
             // プロジェクトデータを更新
-            $project_name ->update([
-                'user_id' =>  $validatedData['user_id']?? $project_name->user_id,
-                'project_name' => $validatedData['project_name']?? $project_name->project_name,
+            $project_name->update([
+                'user_id' =>  $validatedData['user_id'] ?? $project_name->user_id,
+                'project_name' => $validatedData['project_name'] ?? $project_name->project_name,
             ]);
             // drawingデータを保存（プロジェクトとリレーション）
             $drawing = $project_name->drawing()->first();
@@ -84,32 +155,32 @@ class Project_nameController extends Controller
             ]);
             // design_drawingデータを保存（プロジェクトとリレーション）
             $project_name->drawing()->first()->design_drawing()->update([
-                'drawing_id' => $drawing->id,//主キーと外部キーを連携
-                'finishing_table_name' => $validatedData['finishing_table_name']?? null,
+                'drawing_id' => $drawing->id, //主キーと外部キーを連携
+                'finishing_table_name' => $validatedData['finishing_table_name'] ?? null,
             ]);
             // structual_diagramデータを保存（プロジェクトとリレーション）
             $project_name->drawing()->first()->structural_diagram()->update([
-                'drawing_id' => $drawing->id,//主キーと外部キーを連携
+                'drawing_id' => $drawing->id, //主キーと外部キーを連携
                 'floor_plan_name' => $validatedData['floor_plan_name'] ?? null,
             ]);
             // equipment_diagramデータを保存（プロジェクトとリレーション）
             $project_name->drawing()->first()->equipment_diagram()->update([
-                'drawing_id' => $drawing->id,//主キーと外部キーを連携
+                'drawing_id' => $drawing->id, //主キーと外部キーを連携
                 'machinery_equipment_diagram_all_name' => $validatedData['machinery_equipment_diagram_all_name'] ?? null,
             ]);
             // bim_drawingデータを保存（プロジェクトとリレーション）
             $project_name->drawing()->first()->bim_drawing()->update([
-                'drawing_id' => $drawing->id,//主キーと外部キーを連携
+                'drawing_id' => $drawing->id, //主キーと外部キーを連携
                 'bim_drawing_name' => $validatedData['bim_drawing_name'] ?? null,
             ]);
             // meeting_logデータを保存（プロジェクトとリレーション）
             $project_name->meeting_log()->update([
-                'project_id' => $project_name->id,//主キーと外部キーを連携
+                'project_id' => $project_name->id, //主キーと外部キーを連携
                 'meeting_log_name' => $validatedData['meeting_log_name'] ?? null,
             ]);
         });
         return response()->json(['message' => '図面と書類が作成されました！'], 201);
-        }
+    }
 
     // 一括削除処理
     // public function delete(Request $request)
@@ -126,7 +197,7 @@ class Project_nameController extends Controller
 
     //     return redirect()->route('project_name.index')->with('error', '削除するプロジェクトが選択されていません');
     // }   
-    
+
     //一覧画面のテーブルすべてを取得
     public function index()
     {
@@ -140,11 +211,10 @@ class Project_nameController extends Controller
         return view('project_name.index', compact('posts'));
     }
 
-    
+
     // データ保存を行うメソッド
     public function store(Request $request)
     {
-       // $request->json()->all();
 
         //バリデーションルール定義
         $validatedDate = $request->validate([
@@ -164,7 +234,8 @@ class Project_nameController extends Controller
             // プロジェクトデータを保存
             $project_name = project_name::create([
                 'user_id' =>  $validatedDate['user_id'],
-                'project_name' => $validatedDate['project_name'], 'デフォルトプロジェクト名',
+                'project_name' => $validatedDate['project_name'],
+                'デフォルトプロジェクト名',
             ]);
             // drawingデータを保存（プロジェクトとリレーション）
             $drawing = $project_name->drawing()->create([
@@ -172,37 +243,36 @@ class Project_nameController extends Controller
             ]);
             // design_drawingデータを保存（プロジェクトとリレーション）
             $project_name->drawing()->first()->design_drawing()->create([
-                'drawing_id' => $drawing->id,//主キーと外部キーを連携
-                'finishing_table_name' => $validatedDate['finishing_table_name']?? null,
+                'drawing_id' => $drawing->id, //主キーと外部キーを連携
+                'finishing_table_name' => $validatedDate['finishing_table_name'] ?? null,
             ]);
             // structual_diagramデータを保存（プロジェクトとリレーション）
             $project_name->drawing()->first()->structural_diagram()->create([
-                'drawing_id' => $drawing->id,//主キーと外部キーを連携
+                'drawing_id' => $drawing->id, //主キーと外部キーを連携
                 'floor_plan_name' => $validatedDate['floor_plan_name'] ?? null,
             ]);
             // equipment_diagramデータを保存（プロジェクトとリレーション）
             $project_name->drawing()->first()->equipment_diagram()->create([
-                'drawing_id' => $drawing->id,//主キーと外部キーを連携
+                'drawing_id' => $drawing->id, //主キーと外部キーを連携
                 'machinery_equipment_diagram_all_name' => $validatedDate['machinery_equipment_diagram_all_name'] ?? null,
             ]);
             // bim_drawingデータを保存（プロジェクトとリレーション）
             $project_name->drawing()->first()->bim_drawing()->create([
-                'drawing_id' => $drawing->id,//主キーと外部キーを連携
+                'drawing_id' => $drawing->id, //主キーと外部キーを連携
                 'bim_drawing_name' =>
                 $validatedDate['bim_drawing_name'] ?? null,
             ]);
             // meeting_logデータを保存（プロジェクトとリレーション）
             $project_name->meeting_log()->create([
-                'project_id' => $project_name->id,//主キーと外部キーを連携
+                'project_id' => $project_name->id, //主キーと外部キーを連携
                 'meeting_log_name' =>
                 $validatedDate['meeting_log_name'] ?? null,
             ]);
         });
         // 保存後のリダイレクト
        // return redirect()->route('project_name.create')->with('success', '図面と書類が作成されました！');
-        return response()->json(['message' =>
-        '図面と書類が作成されました！', 'project_name' => $validatedDate['project_name'],], 201);
-
+         return response()->json(['message' =>
+         '図面と書類が作成されました！', 'project_name' => $validatedDate['project_name'],], 201);
     }
 
 

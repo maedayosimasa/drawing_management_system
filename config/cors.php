@@ -15,7 +15,7 @@ return [
     |
     */
     //Ractの設定
-    'paths' => ['api/*'],
+    'paths' => ['api/*'],// APIのパスを許可
     'allowed_methods' => ['*'],
     'allowed_origins' => ['http://localhost:5173'], // Reactアプリのオリジン
     'allowed_headers' => ['*'],

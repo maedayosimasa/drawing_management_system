@@ -4,6 +4,10 @@ use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Processor\PsrLogMessageProcessor;
+use App\Models\project_name;
+use App\Models\File;
+use App\Http\Controllers\Project_nameController;
+use Illuminate\Support\Facades\Log; // Logクラスをインポート
 
 return [
 
