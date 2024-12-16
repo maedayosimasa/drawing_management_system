@@ -16,69 +16,130 @@ class Project_nameController extends Controller
     //uplodad,downloadメソッド
     public function upload(Request $request)
     {
-        // リクエストデータの確認
-        dd($request->all());
-        var_dump($request->file());
-        //バリデーション
-        $validatedData = $request->validate([
-            'project_name' => 'required|mimes:pdf|max:2048', // 最大2MB
-            'finishing_table_name' => 'required|mimes:pdf|max:2048',
-            'floor_plan_name' => 'required|mimes:pdf|max:2048',
-            'machinery_equipment_diagram_all_name' => 'required|mimes:pdf|max:2048',
-            'bim_drawing_name' => 'required|mimes:pdf|max:2048',
-            'meeting_log_name' => 'required|mimes:pdf|max:2048',
-        ]);
+        try {
+            //バリデーション
+            $validatedData = $request->validate([
+                'project_name' => 'required|file|mimes:jpg,png,pdf|max:2048', // 最大2MB
+                'finishing_table_name' => 'required|file|mimes:jpg,png,pdf|max:2048',
+                'floor_plan_name' => 'required|file|mimes:jpg,png,pdf|max:2048',
+                'machinery_equipment_diagram_all_name' => 'required|file|mimes:jpg,png,pdf|max:2048',
+                'bim_drawing_name' => 'required|file|mimes:jpg,png,pdf|max:2048',
+                'meeting_log_name' => 'required|file|mimes:jpg,png,pdf|max:2048',
+            ]);
 
-        // ファイルの保存
-        $filePaths = [];
-        $fileFields = [
-            'project_name',
-            'finishing_table_name',
-            'floor_plan_name',
-            'machinery_equipment_diagram_all_name',
-            'bim_drawing_name',
-            'meeting_log_name'
-        ];
+            // ファイルの保存
+            $filePaths = [];
+            $fileFields = [
+                'project_name',
+                'finishing_table_name',
+                'floor_plan_name',
+                'machinery_equipment_diagram_all_name',
+                'bim_drawing_name',
+                'meeting_log_name',
+            ];
 
-        // 各ファイルをストレージに保存
-        foreach ($fileFields as $field) {
-            if ($request->hasFile($field)) {
-                $filePaths[$field] = $request->file($field)->store('pdfs', 'public');
+            foreach ($fileFields as $fileKey) {
+                $fileFields = $request->file($fileKey);
+                if ($fileFields) {
+                    // 元のファイル名を取得
+                    //$originalFileName = $fileFields->getClientOriginalName();
+                    //ファイル名をクリーンアップする処理を追加ディレクトリトラバーサル攻撃回避
+                    $originalFileName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $fileFields->getClientOriginalName());
+
+                    // ファイルが既に存在する場合は削除（上書き）
+                    $existingFilePath = storage_path('app/uploads/' . $originalFileName);
+                    if (file_exists($existingFilePath)) {
+                        // 既存のファイルを削除
+                        unlink($existingFilePath);
+                    }
+
+                    // 'uploads'ディレクトリにファイルを保存（上書き）
+                    $filePath = $fileFields->storeAs('uploads', $originalFileName);
+                    $filePaths[$fileKey] = $filePath; // 各ファイルのパスを保存
+                    //Log::info("ファイルが保存されましたストレージControllerController: $filePath");
+                } else {
+                    return response()->json(['error' => "$fileKey はファイルがアップロードされていません"], 400);
+                }
             }
-        }
 
-        // データベースに保存
-        $file = new File();
-        // 各フィールドに対応するファイルパスを保存
-        foreach ($fileFields as $field) {
-        $file->project_name = isset($filePaths['project_name']) ? $filePaths['project_name'] : null;
-        $file->finishing_table_name = isset($filePaths['finishing_table_name']) ? $filePaths['finishing_table_name'] : null;
-        $file->floor_plan_name = isset($filePaths['floor_plan_name']) ? $filePaths['floor_plan_name'] : null;
-        $file->machinery_equipment_diagram_all_name = isset($filePaths['machinery_equipment_diagram_all_name']) ? $filePaths['machinery_equipment_diagram_all_name'] : null;
-        $file->bim_drawing_name = isset($filePaths['bim_drawing_name']) ? $filePaths['bim_drawing_name'] : null;
-        $file->meeting_log_name = isset($filePaths['meeting_log_name']) ? $filePaths['meeting_log_name'] : null;
-        }
-           // データベースに保存
-        $file->save();
+            DB::transaction(function () use ($filePaths) {
+                // 認証ユーザーのIDを取得
+                $user_id = auth()->id()??1;
 
-        // ダウンロード用リンクの返却
-        return response()->json([
-            'message' => 'File uploaded successfully',
-            'file_id' => $file->id,
-            'download_url' => route('download', ['id' => $file->id]),
-        ]);
+                // プロジェクトデータを保存
+                $project_name = project_name::create([
+                    'user_id' => $user_id,
+                    'project_name' => $filePaths['project_name'], // プロジェクト名のファイルパス
+                ]);
+
+                // drawingデータを保存（プロジェクトとリレーション）
+                $drawing = $project_name->drawing()->create([
+                    'project_name_id' => $project_name->id,
+                ]);
+
+                // design_drawingデータを保存（drawingリレーションとファイルパス）
+                $project_name->drawing()->first()->design_drawing()->create([
+                    'drawing_id' => $drawing->id,
+                    'finishing_table_name' => $filePaths['finishing_table_name'] ?? null, // ファイルパス
+                ]);
+
+                // structural_diagramデータを保存（drawingリレーションとファイルパス）
+                $project_name->drawing()->first()->structural_diagram()->create([
+                    'drawing_id' => $drawing->id,
+                    'floor_plan_name' => $filePaths['floor_plan_name'] ?? null, // ファイルパス
+                ]);
+
+                // equipment_diagramデータを保存（drawingリレーションとファイルパス）
+                $project_name->drawing()->first()->equipment_diagram()->create([
+                    'drawing_id' => $drawing->id,
+                    'machinery_equipment_diagram_all_name' => $filePaths['machinery_equipment_diagram_all_name'] ?? null, // ファイルパス
+                ]);
+
+                // bim_drawingデータを保存（drawingリレーションとファイルパス）
+                $project_name->drawing()->first()->bim_drawing()->create([
+                    'drawing_id' => $drawing->id,
+                    'bim_drawing_name' => $filePaths['bim_drawing_name'] ?? null, // ファイルパス
+                ]);
+
+                // meeting_logデータを保存（プロジェクトリレーションとファイルパス）
+                $project_name->meeting_log()->create([
+                    'project_id' => $project_name->id,
+                    'meeting_log_name' => $filePaths['meeting_log_name'] ?? null, // ファイルパス
+                ]);
+            });
+
+            // 保存後のリダイレクト
+            return response()->json([
+                'message' => 'ファイルパスが保存されました！upload',
+                'file_paths' => $filePaths,
+            ],
+                201
+            );
+            // ダウンロード用リンクの返却
+            // return response()->json([
+            //     'message' => 'ファイルが正常にアップロードされましたデータベース',
+            //     'file_id' => $file->id,
+            //     'download_url' => route('download', ['id' => $file->id]),
+            // ]);
+        } catch (\Exception $e) {
+            Log::error("エラーupload: " . $e->getMessage());
+            return response()->json(['error' => 'ファイルの処理中にエラーが発生しました。upload'], 500);
+        }
     }
-    public function download($id)
-    {
-        $file = File::findOrFail($id);
+    // public function download($id)
+    // {
+    //     $file = File::findOrFail($id);
 
-        $filePath = storage_path('app/public/' . $file->project_name); // 適切なフィールドを指定
-        if (!file_exists($filePath)) {
-            return response()->json(['message' => 'File not found'], 404);
-        }
+    //     $filePath = storage_path('app/public/' . $file->project_name); // 適切なフィールドを指定
+    //     if (!file_exists($filePath)) {
+    //         return response()->json(['message' => 'File not found'], 404);
+    //     }
 
-        return response()->download($filePath);
-    }
+    //     return response()->download($filePath);
+    // }
+
+
+
 
     //検索searchメソッド
     public function search(Request $request)
@@ -270,9 +331,9 @@ class Project_nameController extends Controller
             ]);
         });
         // 保存後のリダイレクト
-       // return redirect()->route('project_name.create')->with('success', '図面と書類が作成されました！');
-         return response()->json(['message' =>
-         '図面と書類が作成されました！', 'project_name' => $validatedDate['project_name'],], 201);
+        // return redirect()->route('project_name.create')->with('success', '図面と書類が作成されました！');
+        return response()->json(['message' =>
+        '図面と書類が作成されました！', 'project_name' => $validatedDate['project_name'],], 201);
     }
 
 
