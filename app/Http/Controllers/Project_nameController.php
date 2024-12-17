@@ -42,9 +42,9 @@ class Project_nameController extends Controller
                 $fileFields = $request->file($fileKey);
                 if ($fileFields) {
                     // 元のファイル名を取得
-                    //$originalFileName = $fileFields->getClientOriginalName();
+                    $originalFileName = $fileFields->getClientOriginalName();
                     //ファイル名をクリーンアップする処理を追加ディレクトリトラバーサル攻撃回避
-                    $originalFileName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $fileFields->getClientOriginalName());
+                    //$originalFileName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $fileFields->getClientOriginalName());
 
                     // ファイルが既に存在する場合は削除（上書き）
                     $existingFilePath = storage_path('app/uploads/' . $originalFileName);
@@ -57,6 +57,35 @@ class Project_nameController extends Controller
                     $filePath = $fileFields->storeAs('uploads', $originalFileName);
                     $filePaths[$fileKey] = $filePath; // 各ファイルのパスを保存
                     //Log::info("ファイルが保存されましたストレージControllerController: $filePath");
+                    // サムネイル用のディレクトリパス
+                    $thumbnailDirectory = storage_path('app/thumbnails/');
+                    if (!file_exists($thumbnailDirectory)) {
+                        mkdir($thumbnailDirectory, 0755, true); // ディレクトリが存在しない場合は作成
+                    }
+                    // PDFの場合にサムネイル（SVG）を生成
+                    $extension = $fileFields->getClientOriginalExtension();
+                    if (strtolower($extension) === 'pdf') {
+                        // SVGサムネイルの保存パス
+                        $svgFileName = pathinfo($originalFileName, PATHINFO_FILENAME) . '.svg';
+                        $thumbnailPath = 'uploads/thumbnails/' . $svgFileName;
+                        // $thumbnailFullPath = storage_path('app/' . $thumbnailPath);
+                        $thumbnailPath = $thumbnailDirectory . $svgFileName;
+                        // PDFからSVGへの変換
+                        $command = "pdf2svg " . escapeshellarg(storage_path('app/uploads/' . $originalFileName)) . " " . escapeshellarg($thumbnailPath) . " 1";
+                        shell_exec($command);
+                        shell_exec($command);
+
+                        // サムネイルのパスも配列に追加
+                        $filePaths['thumbnail_' . $fileKey] = $thumbnailPath;
+                    }
+                    // サムネイル生成結果を確認
+                    // if (file_exists($thumbnailPath)) {
+                    //     Log::info("SVGサムネイルが生成されました: $thumbnailPath");
+                    //     $filePaths['thumbnails'][$fileKey] = 'thumbnails/' . $svgFileName; // サムネイルのパスを保存
+                    // } else {
+                    //     Log::error("SVGサムネイルの生成に失敗しました: $command");
+                    //     return response()->json(['error' => "SVGサムネイルの生成に失敗しました: $fileKey"], 500);
+                    // }
                 } else {
                     return response()->json(['error' => "$fileKey はファイルがアップロードされていません"], 400);
                 }
@@ -64,7 +93,7 @@ class Project_nameController extends Controller
 
             DB::transaction(function () use ($filePaths) {
                 // 認証ユーザーのIDを取得
-                $user_id = auth()->id()??1;
+                $user_id = auth()->id() ?? 1;
 
                 // プロジェクトデータを保存
                 $project_name = project_name::create([
@@ -109,10 +138,11 @@ class Project_nameController extends Controller
             });
 
             // 保存後のリダイレクト
-            return response()->json([
-                'message' => 'ファイルパスが保存されました！upload',
-                'file_paths' => $filePaths,
-            ],
+            return response()->json(
+                [
+                    'message' => 'ファイルパスが保存されました！upload',
+                    'file_paths' => $filePaths,
+                ],
                 201
             );
             // ダウンロード用リンクの返却
