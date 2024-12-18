@@ -19,12 +19,12 @@ class Project_nameController extends Controller
         try {
             //バリデーション
             $validatedData = $request->validate([
-                'project_name' => 'required|file|mimes:jpg,png,pdf|max:2048', // 最大2MB
-                'finishing_table_name' => 'required|file|mimes:jpg,png,pdf|max:2048',
-                'floor_plan_name' => 'required|file|mimes:jpg,png,pdf|max:2048',
-                'machinery_equipment_diagram_all_name' => 'required|file|mimes:jpg,png,pdf|max:2048',
-                'bim_drawing_name' => 'required|file|mimes:jpg,png,pdf|max:2048',
-                'meeting_log_name' => 'required|file|mimes:jpg,png,pdf|max:2048',
+                'project_name' => 'required|file|mimes:jpg,png,pdf|max:204800', // 最大200MB
+                'finishing_table_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'floor_plan_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'machinery_equipment_diagram_all_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'bim_drawing_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'meeting_log_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
             ]);
 
             // ファイルの保存
@@ -39,10 +39,15 @@ class Project_nameController extends Controller
             ];
 
             foreach ($fileFields as $fileKey) {
-                $fileFields = $request->file($fileKey);
-                if ($fileFields) {
+                $file = $request->file($fileKey);
+
+                if ($file && $file->isValid()) { // ファイルが存在し、有効な場合のみ処理
                     // 元のファイル名を取得
-                    $originalFileName = $fileFields->getClientOriginalName();
+                    // 配列内の空部分をスキップ
+                    // if (empty($fileKey)) {
+                    //     continue;
+                    // }
+                    $originalFileName = $file->getClientOriginalName();
                     //ファイル名をクリーンアップする処理を追加ディレクトリトラバーサル攻撃回避
                     //$originalFileName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $fileFields->getClientOriginalName());
 
@@ -54,7 +59,7 @@ class Project_nameController extends Controller
                     }
 
                     // 'uploads'ディレクトリにファイルを保存（上書き）
-                    $filePath = $fileFields->storeAs('uploads', $originalFileName);
+                    $filePath = $file->storeAs('uploads', $originalFileName);
                     $filePaths[$fileKey] = $filePath; // 各ファイルのパスを保存
                     //Log::info("ファイルが保存されましたストレージControllerController: $filePath");
                     // サムネイル用のディレクトリパス
@@ -63,7 +68,7 @@ class Project_nameController extends Controller
                         mkdir($thumbnailDirectory, 0755, true); // ディレクトリが存在しない場合は作成
                     }
                     // PDFの場合にサムネイル（SVG）を生成
-                    $extension = $fileFields->getClientOriginalExtension();
+                    $extension = $file->getClientOriginalExtension();
                     if (strtolower($extension) === 'pdf') {
                         // SVGサムネイルの保存パス
                         $svgFileName = pathinfo($originalFileName, PATHINFO_FILENAME) . '.svg';
@@ -87,7 +92,8 @@ class Project_nameController extends Controller
                     //     return response()->json(['error' => "SVGサムネイルの生成に失敗しました: $fileKey"], 500);
                     // }
                 } else {
-                    return response()->json(['error' => "$fileKey はファイルがアップロードされていません"], 400);
+                    // ファイルが無効または空の場合はスキップ
+                    Log::info("ファイルが空または無効ですupdate: $fileKey");
                 }
             }
 
@@ -98,7 +104,7 @@ class Project_nameController extends Controller
                 // プロジェクトデータを保存
                 $project_name = project_name::create([
                     'user_id' => $user_id,
-                    'project_name' => $filePaths['project_name'], // プロジェクト名のファイルパス
+                    'project_name' => $filePaths['project_name'] ?? null, // プロジェクト名のファイルパス
                 ]);
 
                 // drawingデータを保存（プロジェクトとリレーション）
