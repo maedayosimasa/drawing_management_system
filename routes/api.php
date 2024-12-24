@@ -20,25 +20,48 @@ use Illuminate\Support\Facades\Storage;
 */
 
 //RactとのAPIのルート設定
-Route::get('/project_names', function () {
-    $project_names = project_name::with(
-        // 必要なリレーションを含むプロジェクト名を取得
-        'drawing.design_drawing',
-        'drawing.structural_diagram',
-        'drawing.equipment_diagram',
-        'drawing.bim_drawing',
-        'meeting_log'
-    )->get();
-    return response()->json($project_names); // JSONでデータを返す
-});
+// Route::get('/project_names', function () {
+//     $project_names = project_name::with(
+//         // 必要なリレーションを含むプロジェクト名を取得
+//         'drawing.design_drawing',
+//         'drawing.structural_diagram',
+//         'drawing.equipment_diagram',
+//         'drawing.bim_drawing',
+//         'meeting_log'
+//     )->get();
+//     return response()->json($project_names); // JSONでデータを返す
+// });
 
 //RactとのAPIのルート設定
 Route::get('Project_name', [Project_nameController::class, 'index']);
 Route::post('Project_name', [Project_nameController::class, 'store']);
 
 //upLoad,downLoadルート設定
+ Route::post('Project_name', [Project_nameController::class, 'upload'])->name('upload');
+ Route::get('Project_name/download/{id}', [Project_nameController::class, 'download'])->name('download');
+
+//createのルート設定
 Route::post('Project_name', [Project_nameController::class, 'upload'])->name('upload');
-Route::get('Project_name/download/{id}', [Project_nameController::class, 'download'])->name('download');
+//Route::get('Project_name', [Project_nameController::class, 'download'])->name('download');
+
+//seachのルート設定
+Route::post('Project_name/search', [Project_nameController::class, 'search'])->name('search');
+//Route::get('Project_name/select', [Project_nameController::class, 'select'])->name('select');
+
+//showのルート設定
+Route::post('Project_name/show', [Project_nameController::class, 'show'])->name('show');
+Route::get('Project_name/show/{id}', [Project_nameController::class, 'show'])->name('show');
+
+
+//selectのルート設定
+ Route::post('Project_name/select', [Project_nameController::class, 'select'])->name('project_name.select');
+ Route::get('Project_name/select', [Project_nameController::class, 'select'])->name('project_name.select');
+
+//updateの設定
+Route::post('Project_name/update', [Project_nameController::class, 'update'])->name('update');
+Route::get('Project_name/update', [Project_nameController::class, 'update'])->name('update');
+
+
 
 // routes/api.php
 // Route::post('/Project_name', function (Request $request) {

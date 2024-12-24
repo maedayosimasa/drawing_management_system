@@ -185,12 +185,16 @@ class Project_nameController extends Controller
 
         //部分一致検索を実行
         $project_name = project_name::where('project_name', 'like', '%' . $query . '%')->get();
+        //Log::info('情報メッセージsearch: 変数の値は', ['変数名' => $project_name]);
+
         //  dd($project_name);
         //検索ビューに渡す
         // if (empty($query)) {
         //     return redirect()->back()->with('error', '検索キーワードを入力してください。');
         // }
-        return view('project_name.search', compact('project_name', 'query'));
+        //return view('project_name.search', compact('project_name', 'query'));
+        return response()->json($project_name); // JSON形式で結果を返す
+
     }
 
 
@@ -198,25 +202,40 @@ class Project_nameController extends Controller
     public function select(Request $request)
     {
         // フォームから選択されたプロジェクトIDを取得
-        $selectedProjectIds = $request->input('project_name_id');
-        // dd($selectedProjectIds);  // 送信された全データを確認
-        // 選択したプロジェクトIDを使用してデータを取得（必要に応じて）
+        $selectedProjectIds = $request->input('id');
+        Log::info('情報メッセージselect: 変数の値は', ['変数名' => $selectedProjectIds]);
+        // プロジェクトIDが取得できなかった場合の処理を追加
+        if (empty($selectedProjectIds) || !is_array($selectedProjectIds)) {
+            Log::error('プロジェクトIDが空または無効です:', ['リクエストデータ' => $request->all()]);
+            return response()->json(['error select' => 'プロジェクトIDが選択されていません'], 400);
+        }
+
         $project_name = project_name::whereIn('id', $selectedProjectIds)->get();
-        //dd($project_name);
         // return view('project_name.select', ['project_name' => $selectedProjects]);
-        return view('project_name.select', compact('project_name'));
+        //return view('project_name.select', compact('project_name'));
+        //return response()->json($project_name); // JSON形式で結果を返す
+        return response()->json(['redirect' => 'Project_name/select', 'project_name' => $project_name]); // JSON形式で結果を返しリダイレクト
     }
 
 
     //プロジェクト詳細を表示するshowメソッド
-    public function show(
-        Request $request
-    ) {
-        $id = $request->query('id');
-        //dd($request->query('id'));  // クエリパラメータの 'id' を取得
-        $project_name = project_name::findOrFail($id);
-        // dd($id);
-        return view('project_name.show', compact('project_name'));
+    // public function show(Request $request, $id) {
+    //     $id = $request->query('id');
+    //     Log::info('情報メッセージshow: 変数の値は', ['変数名' => $id]);
+    //     //dd($request->query('id'));  // クエリパラメータの 'id' を取得
+    //     $project_name = project_name::findOrFail($id);
+    //     // dd($id);
+    //     //return view('project_name.show', compact('project_name'));
+    //     return response()->json($project_name); 
+    // }
+    public function show($id)
+    {
+        Log::info('情報メッセージshow: 変数の値は', ['変数名' => $id]);
+
+        $project_name = Project_name::findOrFail($id);
+        Log::info('情報メッセージshow: 変数の値は', ['変数名' => $project_name]);
+        // プロジェクト詳細情報をJSONで返却
+        return response()->json(['redirect' => 'Project_name/show', 'project_name' => $project_name]); // JSON形式で結果を返しリダイレクト
     }
 
     //部分変更 updateメソッド(編集)
