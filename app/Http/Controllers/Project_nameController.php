@@ -17,6 +17,7 @@ class Project_nameController extends Controller
     public function upload(Request $request)
     {
         try {
+            Log::info('情報メッセージsearch: 変数の値は', ['変数名' => $request]);
             //バリデーション
             $validatedData = $request->validate([
                 'project_name' => 'required|file|mimes:jpg,png,pdf|max:204800', // 最大200MB
@@ -203,7 +204,7 @@ class Project_nameController extends Controller
     {
         // フォームから選択されたプロジェクトIDを取得
         $selectedProjectIds = $request->input('id');
-        Log::info('情報メッセージselect: 変数の値は', ['変数名' => $selectedProjectIds]);
+        //Log::info('情報メッセージselect: 変数の値は', ['変数名' => $selectedProjectIds]);
         // プロジェクトIDが取得できなかった場合の処理を追加
         if (empty($selectedProjectIds) || !is_array($selectedProjectIds)) {
             Log::error('プロジェクトIDが空または無効です:', ['リクエストデータ' => $request->all()]);
@@ -211,6 +212,7 @@ class Project_nameController extends Controller
         }
 
         $project_name = project_name::whereIn('id', $selectedProjectIds)->get();
+        Log::info('情報メッセージselect: 変数の値は', ['変数名' => $project_name]);
         // return view('project_name.select', ['project_name' => $selectedProjects]);
         //return view('project_name.select', compact('project_name'));
         //return response()->json($project_name); // JSON形式で結果を返す
@@ -237,6 +239,21 @@ class Project_nameController extends Controller
         // プロジェクト詳細情報をJSONで返却
         return response()->json(['redirect' => 'Project_name/show', 'project_name' => $project_name]); // JSON形式で結果を返しリダイレクト
     }
+
+    //抽出extraction
+    public function extraction($id)
+    {
+       
+
+        // 部分一致検索を実行
+        $project_name = Project_name::where('id', $id)->firstOrFail();
+        Log::info('情報メッセージextraction: 変数の値は', ['変数名' => $project_name]);
+        Log::info('情報メッセージextraction: $project_name', ['変数名' => $project_name]);
+        // プロジェクト詳細情報をJSONで返却
+        return response()->json($project_name); // JSON形式で結果を返す
+    }
+
+
 
     //部分変更 updateメソッド(編集)
     public function update(Request $request, $id)
