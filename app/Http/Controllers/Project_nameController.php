@@ -182,15 +182,9 @@ class Project_nameController extends Controller
     public function search(Request $request)
     {
         $query = $request->input('query'); //検索クエリの取得
-        // dd($query);
-
-        //部分一致検索を実行
+          //部分一致検索を実行
         $project_name = project_name::where('project_name', 'like', '%' . $query . '%')->get();
         //Log::info('情報メッセージsearch: 変数の値は', ['変数名' => $project_name]);
-
-        //  dd($project_name);
-        //検索ビューに渡す
-        // if (empty($query)) {
         //     return redirect()->back()->with('error', '検索キーワードを入力してください。');
         // }
         //return view('project_name.search', compact('project_name', 'query'));
@@ -211,7 +205,7 @@ class Project_nameController extends Controller
             return response()->json(['error select' => 'プロジェクトIDが選択されていません'], 400);
         }
 
-        $project_name = project_name::whereIn('id', $selectedProjectIds)->get();
+        $project_name = project_name::whereIn('id', $selectedProjectIds)->with(['drawing.design_drawing', 'drawing.structural_diagram', 'drawing.equipment_diagram', 'drawing.bim_drawing', 'meeting_log'])->get();
         Log::info('情報メッセージselect: 変数の値は', ['変数名' => $project_name]);
         // return view('project_name.select', ['project_name' => $selectedProjects]);
         //return view('project_name.select', compact('project_name'));
@@ -234,19 +228,18 @@ class Project_nameController extends Controller
     {
         Log::info('情報メッセージshow: 変数の値は', ['変数名' => $id]);
 
-        $project_name = Project_name::findOrFail($id);
+        $project_name = project_name::findOrFail($id)->with(['drawing.design_drawing', 'drawing.structural_diagram', 'drawing.equipment_diagram', 'drawing.bim_drawing', 'meeting_log'])->get();
         Log::info('情報メッセージshow: 変数の値は', ['変数名' => $project_name]);
         // プロジェクト詳細情報をJSONで返却
-        return response()->json(['redirect' => 'Project_name/show', 'project_name' => $project_name]); // JSON形式で結果を返しリダイレクト
+        return response()->json($project_name); // JSON形式で結果を返しリダイレクト
     }
 
     //抽出extraction
     public function extraction($id)
     {
        
-
         // 部分一致検索を実行
-        $project_name = Project_name::where('id', $id)->firstOrFail();
+        $project_name = project_name::where('id', $id)->with(['drawing.design_drawing', 'drawing.structural_diagram', 'drawing.equipment_diagram', 'drawing.bim_drawing', 'meeting_log'])->firstOrFail();
         Log::info('情報メッセージextraction: 変数の値は', ['変数名' => $project_name]);
         Log::info('情報メッセージextraction: $project_name', ['変数名' => $project_name]);
         // プロジェクト詳細情報をJSONで返却
