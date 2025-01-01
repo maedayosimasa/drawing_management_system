@@ -17,9 +17,10 @@ class Project_nameController extends Controller
     public function upload(Request $request)
     {
         try {
-            Log::info('情報メッセージsearch: 変数の値は', ['変数名' => $request]);
+           // Log::info('情報メッセージsearch: 変数の値は', ['変数名' => $request]);
             //バリデーション
             $validatedData = $request->validate([
+                'id' => 'required|max:2048',
                 'project_name' => 'required|file|mimes:jpg,png,pdf|max:204800', // 最大200MB
                 'finishing_table_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
                 'floor_plan_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
@@ -27,10 +28,11 @@ class Project_nameController extends Controller
                 'bim_drawing_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
                 'meeting_log_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
             ]);
-
+            Log::info('情報メッセージshow: 変数の値は', ['変数名' => $validatedData]);
             // ファイルの保存
             $filePaths = [];
             $fileFields = [
+                'id',
                 'project_name',
                 'finishing_table_name',
                 'floor_plan_name',
@@ -98,50 +100,54 @@ class Project_nameController extends Controller
                 }
             }
 
-            DB::transaction(function () use ($filePaths) {
+            DB::transaction(function () use ($filePaths, $validatedData) {
                 // 認証ユーザーのIDを取得
                 $user_id = auth()->id() ?? 1;
 
-                // プロジェクトデータを保存
-                $project_name = project_name::create([
-                    'user_id' => $user_id,
-                    'project_name' => $filePaths['project_name'] ?? null, // プロジェクト名のファイルパス
-                ]);
+                // プロジェクトデータの取得または作成
+                $project_name = project_name::updateOrCreate(
+                    ['id' => $validatedData['id']], // 'id'が一致するレコードを探す
+                    //idがあれば上書き　idがなければ新規追加
+                    [
+                        'user_id' => $user_id,
+                        'project_name' => $filePaths['project_name'] ?? null, // プロジェクト名のファイルパス
+                    ]
+                );
 
-                // drawingデータを保存（プロジェクトとリレーション）
-                $drawing = $project_name->drawing()->create([
-                    'project_name_id' => $project_name->id,
-                ]);
+                // drawingデータの取得または作成
+                $drawing = $project_name->drawing()->updateOrCreate(
+                        ['project_name_id' => $project_name->id]
+                    );
 
-                // design_drawingデータを保存（drawingリレーションとファイルパス）
-                $project_name->drawing()->first()->design_drawing()->create([
-                    'drawing_id' => $drawing->id,
-                    'finishing_table_name' => $filePaths['finishing_table_name'] ?? null, // ファイルパス
-                ]);
+                // design_drawingデータの取得または作成
+                $project_name->drawing()->first()->design_drawing()->updateOrCreate(
+                    ['drawing_id' => $drawing->id],
+                    ['finishing_table_name' => $filePaths['finishing_table_name'] ?? null] // ファイルパス
+                );
 
-                // structural_diagramデータを保存（drawingリレーションとファイルパス）
-                $project_name->drawing()->first()->structural_diagram()->create([
-                    'drawing_id' => $drawing->id,
-                    'floor_plan_name' => $filePaths['floor_plan_name'] ?? null, // ファイルパス
-                ]);
+                // structural_diagramデータの取得または作成
+                $project_name->drawing()->first()->structural_diagram()->updateOrCreate(
+                    ['drawing_id' => $drawing->id],
+                    ['floor_plan_name' => $filePaths['floor_plan_name'] ?? null] // ファイルパス
+                );
 
-                // equipment_diagramデータを保存（drawingリレーションとファイルパス）
-                $project_name->drawing()->first()->equipment_diagram()->create([
-                    'drawing_id' => $drawing->id,
-                    'machinery_equipment_diagram_all_name' => $filePaths['machinery_equipment_diagram_all_name'] ?? null, // ファイルパス
-                ]);
+                // equipment_diagramデータの取得または作成
+                $project_name->drawing()->first()->equipment_diagram()->updateOrCreate(
+                    ['drawing_id' => $drawing->id],
+                    ['machinery_equipment_diagram_all_name' => $filePaths['machinery_equipment_diagram_all_name'] ?? null] // ファイルパス
+                );
 
-                // bim_drawingデータを保存（drawingリレーションとファイルパス）
-                $project_name->drawing()->first()->bim_drawing()->create([
-                    'drawing_id' => $drawing->id,
-                    'bim_drawing_name' => $filePaths['bim_drawing_name'] ?? null, // ファイルパス
-                ]);
+                // bim_drawingデータの取得または作成
+                $project_name->drawing()->first()->bim_drawing()->updateOrCreate(
+                    ['drawing_id' => $drawing->id],
+                    ['bim_drawing_name' => $filePaths['bim_drawing_name'] ?? null] // ファイルパス
+                );
 
-                // meeting_logデータを保存（プロジェクトリレーションとファイルパス）
-                $project_name->meeting_log()->create([
-                    'project_id' => $project_name->id,
-                    'meeting_log_name' => $filePaths['meeting_log_name'] ?? null, // ファイルパス
-                ]);
+                // meeting_logデータの取得または作成
+                $project_name->meeting_log()->updateOrCreate(
+                    ['project_id' => $project_name->id],
+                    ['meeting_log_name' => $filePaths['meeting_log_name'] ?? null] // ファイルパス
+                );
             });
 
             // 保存後のリダイレクト
@@ -182,7 +188,7 @@ class Project_nameController extends Controller
     public function search(Request $request)
     {
         $query = $request->input('query'); //検索クエリの取得
-          //部分一致検索を実行
+        //部分一致検索を実行
         $project_name = project_name::where('project_name', 'like', '%' . $query . '%')->get();
         //Log::info('情報メッセージsearch: 変数の値は', ['変数名' => $project_name]);
         //     return redirect()->back()->with('error', '検索キーワードを入力してください。');
@@ -228,23 +234,31 @@ class Project_nameController extends Controller
     {
         Log::info('情報メッセージshow: 変数の値は', ['変数名' => $id]);
 
-        $project_name = project_name::findOrFail($id)->with(['drawing.design_drawing', 'drawing.structural_diagram', 'drawing.equipment_diagram', 'drawing.bim_drawing', 'meeting_log'])->get();
+        // `$id` に基づいて特定のプロジェクトを取得
+        $project_name = project_name::with([
+            'drawing.design_drawing',
+            'drawing.structural_diagram',
+            'drawing.equipment_diagram',
+            'drawing.bim_drawing',
+            'meeting_log',
+        ])->findOrFail($id);
         Log::info('情報メッセージshow: 変数の値は', ['変数名' => $project_name]);
         // プロジェクト詳細情報をJSONで返却
-        return response()->json($project_name); // JSON形式で結果を返しリダイレクト
+        return response()->json(['redirect' => 'Project_name/show',
+         'project_name' => $project_name]); // JSON形式で結果を返しリダイレクト
     }
 
     //抽出extraction
-    public function extraction($id)
-    {
-       
-        // 部分一致検索を実行
-        $project_name = project_name::where('id', $id)->with(['drawing.design_drawing', 'drawing.structural_diagram', 'drawing.equipment_diagram', 'drawing.bim_drawing', 'meeting_log'])->firstOrFail();
-        Log::info('情報メッセージextraction: 変数の値は', ['変数名' => $project_name]);
-        Log::info('情報メッセージextraction: $project_name', ['変数名' => $project_name]);
-        // プロジェクト詳細情報をJSONで返却
-        return response()->json($project_name); // JSON形式で結果を返す
-    }
+    // public function extraction($id)
+    // {
+
+    //     // 部分一致検索を実行
+    //     $project_name = project_name::where('id', $id)->with(['drawing.design_drawing', 'drawing.structural_diagram', 'drawing.equipment_diagram', 'drawing.bim_drawing', 'meeting_log'])->firstOrFail();
+    //     Log::info('情報メッセージextraction: 変数の値は', ['変数名' => $project_name]);
+    //     Log::info('情報メッセージextraction: $project_name', ['変数名' => $project_name]);
+    //     // プロジェクト詳細情報をJSONで返却
+    //     return response()->json($project_name); // JSON形式で結果を返す
+    // }
 
 
 
