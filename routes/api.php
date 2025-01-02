@@ -33,7 +33,7 @@ use Illuminate\Support\Facades\Storage;
 // });
 
 //RactとのAPIのルート設定
-Route::get('Project_name', [Project_nameController::class, 'index']);
+Route::get('Project_name/index', [Project_nameController::class, 'index']);
 Route::post('Project_name', [Project_nameController::class, 'store']);
 
 //upLoad,downLoadルート設定

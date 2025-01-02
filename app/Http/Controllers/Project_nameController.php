@@ -365,14 +365,20 @@ class Project_nameController extends Controller
     //一覧画面のテーブルすべてを取得
     public function index()
     {
-        $posts = Project_name::all();
-        // デバッグでデータを確認
-        // dd($posts);
+        $project_name = project_name::with([
+            'drawing.design_drawing',
+            'drawing.structural_diagram',
+            'drawing.equipment_diagram',
+            'drawing.bim_drawing',
+            'meeting_log',
+        ])->get();
+        //Log::info('情報メッセージindex:', ['変数名' => $posts]);
         // デバッグメッセージを出力
         // if ($posts->isEmpty()) {
         //     dd("データが存在しません。"); // Laravelの dd() でデバッグ終了
         // }
-        return view('project_name.index', compact('posts'));
+        // return view('project_name.index', compact('posts'));
+        return response()->json(['project_name' => $project_name]); // JSON形式で結果を返しリダイレクト
     }
 
 
