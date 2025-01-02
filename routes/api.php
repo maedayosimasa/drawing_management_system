@@ -38,7 +38,7 @@ Route::post('Project_name', [Project_nameController::class, 'store']);
 
 //upLoad,downLoadルート設定
  Route::post('Project_name/upload', [Project_nameController::class, 'upload'])->name('upload');
- Route::get('Project_name/download/{id}', [Project_nameController::class, 'download'])->name('download');
+ Route::get('Project_name/upload', [Project_nameController::class, 'upload'])->name('upload');
 
 //createのルート設定
 Route::post('Project_name', [Project_nameController::class, 'upload'])->name('upload');
@@ -53,7 +53,7 @@ Route::post('Project_name/show', [Project_nameController::class, 'show'])->name(
 Route::get('Project_name/show/{id}', [Project_nameController::class, 'show'])->name('show');
 
 //extraction
-Route::get('Project_name/extraction/{id}', [Project_nameController::class, 'extraction'])->name('extraction');
+//Route::get('Project_name/extraction/{id}', [Project_nameController::class, 'extraction'])->name('extraction');
 
 
 //selectのルート設定

@@ -17,10 +17,10 @@ class Project_nameController extends Controller
     public function upload(Request $request)
     {
         try {
-           // Log::info('情報メッセージsearch: 変数の値は', ['変数名' => $request]);
+            Log::info('情報メッセージsearch: 変数の値は', ['変数名' => $request]);
             //バリデーション
             $validatedData = $request->validate([
-                'id' => 'required|max:2048',
+                'id' => 'nullable|max:2048',
                 'project_name' => 'required|file|mimes:jpg,png,pdf|max:204800', // 最大200MB
                 'finishing_table_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
                 'floor_plan_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
@@ -70,30 +70,30 @@ class Project_nameController extends Controller
                     if (!file_exists($thumbnailDirectory)) {
                         mkdir($thumbnailDirectory, 0755, true); // ディレクトリが存在しない場合は作成
                     }
-                    // PDFの場合にサムネイル（SVG）を生成
+                    // PDFの場合にJPEGサムネイルを生成
                     $extension = $file->getClientOriginalExtension();
                     if (strtolower($extension) === 'pdf') {
-                        // SVGサムネイルの保存パス
-                        $svgFileName = pathinfo($originalFileName, PATHINFO_FILENAME) . '.svg';
-                        $thumbnailPath = 'uploads/thumbnails/' . $svgFileName;
-                        // $thumbnailFullPath = storage_path('app/' . $thumbnailPath);
-                        $thumbnailPath = $thumbnailDirectory . $svgFileName;
-                        // PDFからSVGへの変換
-                        $command = "pdf2svg " . escapeshellarg(storage_path('app/uploads/' . $originalFileName)) . " " . escapeshellarg($thumbnailPath) . " 1";
-                        shell_exec($command);
-                        shell_exec($command);
+                        // JPEGサムネイルの保存パス
+                        $baseFileName = pathinfo($originalFileName, PATHINFO_FILENAME); // 元のファイル名から拡張子を除去
+                        $thumbnailPath = $thumbnailDirectory . $baseFileName . '-1.jpg'; // pdftoppmの出力形式に基づく
 
-                        // サムネイルのパスも配列に追加
-                        $filePaths['thumbnail_' . $fileKey] = $thumbnailPath;
+                        // PDFからJPEGへの変換（pdftoppmを使用）
+                        $pdfPath = escapeshellarg(storage_path('app/public/uploads/' . $originalFileName));
+                        $thumbnailBasePath = escapeshellarg($thumbnailDirectory . $baseFileName);
+                        $command = "pdftoppm -jpeg -f 1 -singlefile $pdfPath $thumbnailBasePath";
+
+                        // コマンドの実行
+                        $output = shell_exec($command);
+
+                        // サムネイル生成結果を確認
+                        if (file_exists($thumbnailPath)) {
+                            Log::info("サムネイルが生成されました: $thumbnailPath");
+                            $filePaths['thumbnail_' . $fileKey] = 'thumbnails/' . basename($thumbnailPath); // サムネイルのパスを保存
+                        } else {
+                            Log::error("サムネイルの生成に失敗しました: $command | 出力: $output");
+                        }
                     }
-                    // サムネイル生成結果を確認
-                    // if (file_exists($thumbnailPath)) {
-                    //     Log::info("SVGサムネイルが生成されました: $thumbnailPath");
-                    //     $filePaths['thumbnails'][$fileKey] = 'thumbnails/' . $svgFileName; // サムネイルのパスを保存
-                    // } else {
-                    //     Log::error("SVGサムネイルの生成に失敗しました: $command");
-                    //     return response()->json(['error' => "SVGサムネイルの生成に失敗しました: $fileKey"], 500);
-                    // }
+
                 } else {
                     // ファイルが無効または空の場合はスキップ
                     Log::info("ファイルが空または無効ですupdate: $fileKey");
@@ -101,53 +101,77 @@ class Project_nameController extends Controller
             }
 
             DB::transaction(function () use ($filePaths, $validatedData) {
-                // 認証ユーザーのIDを取得
-                $user_id = auth()->id() ?? 1;
+                try {
+                    // 認証ユーザーのIDを取得
+                    $user_id = auth()->id() ?? 1;
 
-                // プロジェクトデータの取得または作成
-                $project_name = project_name::updateOrCreate(
-                    ['id' => $validatedData['id']], // 'id'が一致するレコードを探す
-                    //idがあれば上書き　idがなければ新規追加
-                    [
-                        'user_id' => $user_id,
-                        'project_name' => $filePaths['project_name'] ?? null, // プロジェクト名のファイルパス
-                    ]
-                );
+                    // プロジェクトデータの取得または作成・更新
+                    $project_name = project_name::updateOrCreate(
+                        ['id' => $validatedData['id'] ?? null],
+                        [
+                            'user_id' => $user_id,
+                            'project_name' => $filePaths['project_name'] ?? null,
+                        ]
+                    );
 
-                // drawingデータの取得または作成
-                $drawing = $project_name->drawing()->updateOrCreate(
+                    // drawingデータの取得または作成
+                    $drawing = $project_name->drawing()->firstOrCreate(
                         ['project_name_id' => $project_name->id]
                     );
 
-                // design_drawingデータの取得または作成
-                $project_name->drawing()->first()->design_drawing()->updateOrCreate(
-                    ['drawing_id' => $drawing->id],
-                    ['finishing_table_name' => $filePaths['finishing_table_name'] ?? null] // ファイルパス
-                );
+                    // design_drawingデータの取得または更新
+                    if (!empty($filePaths['finishing_table_name'])) {
+                        $drawing->design_drawing()->updateOrCreate(
+                            ['drawing_id' => $drawing->id],
+                            ['finishing_table_name' => $filePaths['finishing_table_name']]
+                        );
+                    }
 
-                // structural_diagramデータの取得または作成
-                $project_name->drawing()->first()->structural_diagram()->updateOrCreate(
-                    ['drawing_id' => $drawing->id],
-                    ['floor_plan_name' => $filePaths['floor_plan_name'] ?? null] // ファイルパス
-                );
+                    // structural_diagramデータの取得または更新
+                    if (!empty($filePaths['floor_plan_name'])) {
+                        $drawing->structural_diagram()->updateOrCreate(
+                            ['drawing_id' => $drawing->id],
+                            ['floor_plan_name' => $filePaths['floor_plan_name']]
+                        );
+                    }
 
-                // equipment_diagramデータの取得または作成
-                $project_name->drawing()->first()->equipment_diagram()->updateOrCreate(
-                    ['drawing_id' => $drawing->id],
-                    ['machinery_equipment_diagram_all_name' => $filePaths['machinery_equipment_diagram_all_name'] ?? null] // ファイルパス
-                );
+                    // equipment_diagramデータの取得または更新
+                    if (!empty($filePaths['machinery_equipment_diagram_all_name'])) {
+                        $drawing->equipment_diagram()->updateOrCreate(
+                            ['drawing_id' => $drawing->id],
+                            ['machinery_equipment_diagram_all_name' => $filePaths['machinery_equipment_diagram_all_name']]
+                        );
+                    }
 
-                // bim_drawingデータの取得または作成
-                $project_name->drawing()->first()->bim_drawing()->updateOrCreate(
-                    ['drawing_id' => $drawing->id],
-                    ['bim_drawing_name' => $filePaths['bim_drawing_name'] ?? null] // ファイルパス
-                );
+                    // bim_drawingデータの取得または更新
+                    if (!empty($filePaths['bim_drawing_name'])) {
+                        $drawing->bim_drawing()->updateOrCreate(
+                            ['drawing_id' => $drawing->id],
+                            ['bim_drawing_name' => $filePaths['bim_drawing_name']]
+                        );
+                    }
 
-                // meeting_logデータの取得または作成
-                $project_name->meeting_log()->updateOrCreate(
-                    ['project_id' => $project_name->id],
-                    ['meeting_log_name' => $filePaths['meeting_log_name'] ?? null] // ファイルパス
-                );
+                    // meeting_logデータの取得または更新
+                    if (!empty($filePaths['meeting_log_name'])) {
+                        $project_name->meeting_log()->updateOrCreate(
+                            ['project_id' => $project_name->id],
+                            ['meeting_log_name' => $filePaths['meeting_log_name']]
+                        );
+                    }
+
+                    // 成功時のレスポンス
+                    return response()->json(
+                        [
+                            'message' => 'ファイルパスが保存されました！upload',
+                            'file_paths' => $filePaths,
+                        ],
+                        201
+                    );
+                } catch (\Exception $e) {
+                    // エラーログとレスポンス
+                    Log::error("エラーupload: " . $e->getMessage());
+                    return response()->json(['error' => 'ファイルの処理中にエラーが発生しました。upload'], 500);
+                }
             });
 
             // 保存後のリダイレクト
@@ -263,64 +287,64 @@ class Project_nameController extends Controller
 
 
     //部分変更 updateメソッド(編集)
-    public function update(Request $request, $id)
-    {
-        // dd($id);
-        //$id = $request->request('id');
-        //バリデーション
-        $validatedData = $request->validate([
-            'project_name' => 'nullable|string|max:255',
-            'finishing_table_name' => 'nullable|string|max:255',
-            'floor_plan_name' => 'nullable|string|max:255',
-            'machinery_equipment_diagram_all_name' => 'nullable|string|max:255',
-            'bim_drawing_name' => 'nullable|string|max:255',
-            'meeting_log_name' => 'nullable|string|max:255',
-        ]);
+    // public function update(Request $request, $id)
+    // {
+    //     // dd($id);
+    //     //$id = $request->request('id');
+    //     //バリデーション
+    //     $validatedData = $request->validate([
+    //         'project_name' => 'nullable|string|max:255',
+    //         'finishing_table_name' => 'nullable|string|max:255',
+    //         'floor_plan_name' => 'nullable|string|max:255',
+    //         'machinery_equipment_diagram_all_name' => 'nullable|string|max:255',
+    //         'bim_drawing_name' => 'nullable|string|max:255',
+    //         'meeting_log_name' => 'nullable|string|max:255',
+    //     ]);
 
-        //dd($id);
-        $project_name = project_name::findOrFail($id);
+    //     //dd($id);
+    //     $project_name = project_name::findOrFail($id);
 
-        // トランザクション処理で一括保存
-        DB::transaction(function () use ($validatedData, $project_name) {
-            //$user_id = auth()->id(); // 認証ユーザーのIDを取得
-            // プロジェクトデータを更新
-            $project_name->update([
-                'user_id' =>  $validatedData['user_id'] ?? $project_name->user_id,
-                'project_name' => $validatedData['project_name'] ?? $project_name->project_name,
-            ]);
-            // drawingデータを保存（プロジェクトとリレーション）
-            $drawing = $project_name->drawing()->first();
-            $drawing->update([
-                'project_name_id' => $project_name->id,
-            ]);
-            // design_drawingデータを保存（プロジェクトとリレーション）
-            $project_name->drawing()->first()->design_drawing()->update([
-                'drawing_id' => $drawing->id, //主キーと外部キーを連携
-                'finishing_table_name' => $validatedData['finishing_table_name'] ?? null,
-            ]);
-            // structual_diagramデータを保存（プロジェクトとリレーション）
-            $project_name->drawing()->first()->structural_diagram()->update([
-                'drawing_id' => $drawing->id, //主キーと外部キーを連携
-                'floor_plan_name' => $validatedData['floor_plan_name'] ?? null,
-            ]);
-            // equipment_diagramデータを保存（プロジェクトとリレーション）
-            $project_name->drawing()->first()->equipment_diagram()->update([
-                'drawing_id' => $drawing->id, //主キーと外部キーを連携
-                'machinery_equipment_diagram_all_name' => $validatedData['machinery_equipment_diagram_all_name'] ?? null,
-            ]);
-            // bim_drawingデータを保存（プロジェクトとリレーション）
-            $project_name->drawing()->first()->bim_drawing()->update([
-                'drawing_id' => $drawing->id, //主キーと外部キーを連携
-                'bim_drawing_name' => $validatedData['bim_drawing_name'] ?? null,
-            ]);
-            // meeting_logデータを保存（プロジェクトとリレーション）
-            $project_name->meeting_log()->update([
-                'project_id' => $project_name->id, //主キーと外部キーを連携
-                'meeting_log_name' => $validatedData['meeting_log_name'] ?? null,
-            ]);
-        });
-        return response()->json(['message' => '図面と書類が作成されました！'], 201);
-    }
+    //     // トランザクション処理で一括保存
+    //     DB::transaction(function () use ($validatedData, $project_name) {
+    //         //$user_id = auth()->id(); // 認証ユーザーのIDを取得
+    //         // プロジェクトデータを更新
+    //         $project_name->update([
+    //             'user_id' =>  $validatedData['user_id'] ?? $project_name->user_id,
+    //             'project_name' => $validatedData['project_name'] ?? $project_name->project_name,
+    //         ]);
+    //         // drawingデータを保存（プロジェクトとリレーション）
+    //         $drawing = $project_name->drawing()->first();
+    //         $drawing->update([
+    //             'project_name_id' => $project_name->id,
+    //         ]);
+    //         // design_drawingデータを保存（プロジェクトとリレーション）
+    //         $project_name->drawing()->first()->design_drawing()->update([
+    //             'drawing_id' => $drawing->id, //主キーと外部キーを連携
+    //             'finishing_table_name' => $validatedData['finishing_table_name'] ?? null,
+    //         ]);
+    //         // structual_diagramデータを保存（プロジェクトとリレーション）
+    //         $project_name->drawing()->first()->structural_diagram()->update([
+    //             'drawing_id' => $drawing->id, //主キーと外部キーを連携
+    //             'floor_plan_name' => $validatedData['floor_plan_name'] ?? null,
+    //         ]);
+    //         // equipment_diagramデータを保存（プロジェクトとリレーション）
+    //         $project_name->drawing()->first()->equipment_diagram()->update([
+    //             'drawing_id' => $drawing->id, //主キーと外部キーを連携
+    //             'machinery_equipment_diagram_all_name' => $validatedData['machinery_equipment_diagram_all_name'] ?? null,
+    //         ]);
+    //         // bim_drawingデータを保存（プロジェクトとリレーション）
+    //         $project_name->drawing()->first()->bim_drawing()->update([
+    //             'drawing_id' => $drawing->id, //主キーと外部キーを連携
+    //             'bim_drawing_name' => $validatedData['bim_drawing_name'] ?? null,
+    //         ]);
+    //         // meeting_logデータを保存（プロジェクトとリレーション）
+    //         $project_name->meeting_log()->update([
+    //             'project_id' => $project_name->id, //主キーと外部キーを連携
+    //             'meeting_log_name' => $validatedData['meeting_log_name'] ?? null,
+    //         ]);
+    //     });
+    //     return response()->json(['message' => '図面と書類が作成されました！'], 201);
+    // }
 
     // 一括削除処理
     // public function delete(Request $request)
