@@ -17,5 +17,7 @@ class Meeting_log extends Model
     protected $fillable = [
         'project_name_id',
         'meeting_log_name',
+        'meeting_log_view_path',
+        'meeting_log_pdf_path',
     ];
 }

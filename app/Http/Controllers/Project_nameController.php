@@ -64,7 +64,15 @@ class Project_nameController extends Controller
                     // 'uploads'ディレクトリにファイルを保存（上書き）
                     $filePath = $file->storeAs('uploads', $originalFileName);
                     $filePaths[$fileKey] = $filePath; // 各ファイルのパスを保存
-                    //Log::info("ファイルが保存されましたストレージControllerController: $filePath");
+                    $filePaths[$fileKey . '_file'] = $originalFileName; 
+                    // ファイルパスとファイル名を個別に設定
+                    // $filePaths[$fileKey] = [
+                    //     'path' => $filePath, // ファイルの保存パス
+                    //     'name' => $originalFileName, // ファイル名
+                    // ];
+
+        
+                    Log::info("ファイルが保存されました: $filePath");
                     // サムネイル用のディレクトリパス
                     $thumbnailDirectory = storage_path('app/thumbnails/');
                     if (!file_exists($thumbnailDirectory)) {
@@ -82,18 +90,13 @@ class Project_nameController extends Controller
                         $thumbnailBasePath = escapeshellarg($thumbnailDirectory . $baseFileName);
                         $command = "pdftoppm -jpeg -f 1 -singlefile $pdfPath $thumbnailBasePath";
 
-                        // PDFからJPEGへの変換（pdftoppmを使用）
-                        $pdfPath = escapeshellarg(storage_path('app/public/uploads/' . $originalFileName));
-                        $thumbnailBasePath = escapeshellarg($thumbnailDirectory . $baseFileName);
-                        $command = "pdftoppm -jpeg -f 1 -singlefile $pdfPath $thumbnailBasePath";
-
                         // コマンドの実行
                         $output = shell_exec($command);
 
                         // サムネイル生成結果を確認
                         if (file_exists($thumbnailPath)) {
                             Log::info("サムネイルが生成されました: $thumbnailPath");
-                            $filePaths['thumbnail_' . $fileKey] = 'thumbnails/' . basename($thumbnailPath); // サムネイルのパスを保存
+                            $filePaths[ $fileKey . '_thumbnail' ] = 'thumbnails/' . basename($thumbnailPath); // サムネイルのパスを保存
                         } else {
                             Log::error("サムネイルの生成に失敗しました: $command | 出力: $output");
                         }
@@ -124,8 +127,15 @@ class Project_nameController extends Controller
                     );
 
                     Log::info('filePaths 配列の内容', $filePaths);
+
                     // design_drawingデータの取得または更新
-                    $thumbnailKey = 'thumbnail_finishing_table_name';  // 'finishing_table_name' に対応するサムネイルキー
+                    if (!empty($filePaths['finishing_table_name_file'])) {
+                        $drawing->design_drawing()->updateOrCreate(
+                            ['drawing_id' => $drawing->id],
+                            ['finishing_table_name' => $filePaths['finishing_table_name_file']]
+                        );
+                    }
+                    $thumbnailKey = 'finishing_table_name_thumbnail';  // 'finishing_table_name' に対応するサムネイルキー
                     if (!empty($filePaths[$thumbnailKey])) {
                        // Log::info("サムネイルパスが見つかりました: " . $filePaths[$thumbnailKey]);
                         $drawing->design_drawing()->updateOrCreate(
@@ -145,24 +155,36 @@ class Project_nameController extends Controller
 
 
                     // structural_diagramデータの取得または更新
-                    if (!empty($filePaths['thumbnail_floor_plan_name'])) {
+                    if (!empty($filePaths['floor_plan_name_file'])) {
                         $drawing->structural_diagram()->updateOrCreate(
                             ['drawing_id' => $drawing->id],
-                            ['floor_plan_view_path' => $filePaths['thumbnail_floor_plan_name']]
+                            ['floor_plan_name' => $filePaths['floor_plan_name_file']]
+                        );
+                    }
+                    if (!empty($filePaths['floor_plan_name_thumbnail'])) {
+                        $drawing->structural_diagram()->updateOrCreate(
+                            ['drawing_id' => $drawing->id],
+                            ['floor_plan_view_path' => $filePaths['floor_plan_name_thumbnail']]
                         );
                     }
                     if (!empty($filePaths['floor_plan_name'])) {
                         $drawing->structural_diagram()->updateOrCreate(
                             ['drawing_id' => $drawing->id],
-                            ['floor_plan__pdf_path' => $filePaths['floor_plan_name']]
+                            ['floor_plan_pdf_path' => $filePaths['floor_plan_name']]
                         );
                     }
 
                     // equipment_diagramデータの取得または更新
-                    if (!empty($filePaths['thumbnail_machinery_equipment_diagram_all_name'])) {
+                    if (!empty($filePaths['machinery_equipment_diagram_all_name_file'])) {
                         $drawing->equipment_diagram()->updateOrCreate(
                             ['drawing_id' => $drawing->id],
-                            ['machinery_equipment_diagram_all_view_path' => $filePaths['thumbnail_machinery_equipment_diagram_all_name']]
+                            ['machinery_equipment_diagram_all_name' => $filePaths['machinery_equipment_diagram_all_name_file']]
+                        );
+                    }
+                    if (!empty($filePaths['machinery_equipment_diagram_all_name_thumbnail'])) {
+                        $drawing->equipment_diagram()->updateOrCreate(
+                            ['drawing_id' => $drawing->id],
+                            ['machinery_equipment_diagram_all_view_path' => $filePaths['machinery_equipment_diagram_all_name_thumbnail']]
                         );
                     }
                     if (!empty($filePaths['machinery_equipment_diagram_all_name'])) {
@@ -173,10 +195,16 @@ class Project_nameController extends Controller
                     }
 
                     // bim_drawingデータの取得または更新
-                    if (!empty($filePaths['thumbnail_bim_drawing_name'])) {
+                    if (!empty($filePaths['bim_drawing_name_file'])) {
                         $drawing->bim_drawing()->updateOrCreate(
                             ['drawing_id' => $drawing->id],
-                            ['bim_drawing_view_path' => $filePaths['thumbnail_bim_drawing_name']]
+                            ['bim_drawing_name' => $filePaths['bim_drawing_name_file']]
+                        );
+                    }
+                    if (!empty($filePaths['bim_drawing_name_thumbnail'])) {
+                        $drawing->bim_drawing()->updateOrCreate(
+                            ['drawing_id' => $drawing->id],
+                            ['bim_drawing_view_path' => $filePaths['bim_drawing_name_thumbnail']]
                         );
                     }
                     Log::info('更新または作成されるデータ', [
@@ -192,10 +220,16 @@ class Project_nameController extends Controller
                     }
 
                     // meeting_logデータの取得または更新
-                    if (!empty($filePaths['thumbnail_meeting_log_name'])) {
+                    if (!empty($filePaths['meeting_log_name_file'])) {
                         $project_name->meeting_log()->updateOrCreate(
                             ['project_id' => $project_name->id],
-                            ['meeting_log_view_pathe' => $filePaths['thumbnail_meeting_log_name']]
+                            ['meeting_log_name' => $filePaths['meeting_log_name_file']]
+                        );
+                    }
+                    if (!empty($filePaths['meeting_log_name_thumbnail'])) {
+                        $project_name->meeting_log()->updateOrCreate(
+                            ['project_id' => $project_name->id],
+                            ['meeting_log_view_path' => $filePaths['meeting_log_name_thumbnail']]
                         );
                     }
                     if (!empty($filePaths['meeting_log_name'])) {
