@@ -75,7 +75,12 @@ class Project_nameController extends Controller
                     if (strtolower($extension) === 'pdf') {
                         // JPEGサムネイルの保存パス
                         $baseFileName = pathinfo($originalFileName, PATHINFO_FILENAME); // 元のファイル名から拡張子を除去
-                        $thumbnailPath = $thumbnailDirectory . $baseFileName . '-1.jpg'; // pdftoppmの出力形式に基づく
+                        $thumbnailPath = $thumbnailDirectory . $baseFileName . '.jpg'; // .jpeg の場合も考慮して .jpg で統一
+
+                        // PDFからJPEGへの変換（pdftoppmを使用）
+                        $pdfPath = escapeshellarg(storage_path('app/public/uploads/' . $originalFileName));
+                        $thumbnailBasePath = escapeshellarg($thumbnailDirectory . $baseFileName);
+                        $command = "pdftoppm -jpeg -f 1 -singlefile $pdfPath $thumbnailBasePath";
 
                         // PDFからJPEGへの変換（pdftoppmを使用）
                         $pdfPath = escapeshellarg(storage_path('app/public/uploads/' . $originalFileName));
@@ -93,7 +98,6 @@ class Project_nameController extends Controller
                             Log::error("サムネイルの生成に失敗しました: $command | 出力: $output");
                         }
                     }
-
                 } else {
                     // ファイルが無効または空の場合はスキップ
                     Log::info("ファイルが空または無効ですupdate: $fileKey");
@@ -119,43 +123,85 @@ class Project_nameController extends Controller
                         ['project_name_id' => $project_name->id]
                     );
 
+                    Log::info('filePaths 配列の内容', $filePaths);
                     // design_drawingデータの取得または更新
+                    $thumbnailKey = 'thumbnail_finishing_table_name';  // 'finishing_table_name' に対応するサムネイルキー
+                    if (!empty($filePaths[$thumbnailKey])) {
+                       // Log::info("サムネイルパスが見つかりました: " . $filePaths[$thumbnailKey]);
+                        $drawing->design_drawing()->updateOrCreate(
+                            ['drawing_id' => $drawing->id],
+                            ['finishing_table_view_path' => $filePaths[$thumbnailKey]]
+                        );
+                    } else {
+                        Log::warning("サムネイルパスが見つかりません: $thumbnailKey");
+                    }
+
                     if (!empty($filePaths['finishing_table_name'])) {
                         $drawing->design_drawing()->updateOrCreate(
                             ['drawing_id' => $drawing->id],
-                            ['finishing_table_name' => $filePaths['finishing_table_name']]
+                            ['finishing_table_pdf_path' => $filePaths['finishing_table_name']]
                         );
                     }
 
+
                     // structural_diagramデータの取得または更新
+                    if (!empty($filePaths['thumbnail_floor_plan_name'])) {
+                        $drawing->structural_diagram()->updateOrCreate(
+                            ['drawing_id' => $drawing->id],
+                            ['floor_plan_view_path' => $filePaths['thumbnail_floor_plan_name']]
+                        );
+                    }
                     if (!empty($filePaths['floor_plan_name'])) {
                         $drawing->structural_diagram()->updateOrCreate(
                             ['drawing_id' => $drawing->id],
-                            ['floor_plan_name' => $filePaths['floor_plan_name']]
+                            ['floor_plan__pdf_path' => $filePaths['floor_plan_name']]
                         );
                     }
 
                     // equipment_diagramデータの取得または更新
+                    if (!empty($filePaths['thumbnail_machinery_equipment_diagram_all_name'])) {
+                        $drawing->equipment_diagram()->updateOrCreate(
+                            ['drawing_id' => $drawing->id],
+                            ['machinery_equipment_diagram_all_view_path' => $filePaths['thumbnail_machinery_equipment_diagram_all_name']]
+                        );
+                    }
                     if (!empty($filePaths['machinery_equipment_diagram_all_name'])) {
                         $drawing->equipment_diagram()->updateOrCreate(
                             ['drawing_id' => $drawing->id],
-                            ['machinery_equipment_diagram_all_name' => $filePaths['machinery_equipment_diagram_all_name']]
+                            ['machinery_equipment_diagram_all_pdf_path' => $filePaths['machinery_equipment_diagram_all_name']]
                         );
                     }
 
                     // bim_drawingデータの取得または更新
+                    if (!empty($filePaths['thumbnail_bim_drawing_name'])) {
+                        $drawing->bim_drawing()->updateOrCreate(
+                            ['drawing_id' => $drawing->id],
+                            ['bim_drawing_view_path' => $filePaths['thumbnail_bim_drawing_name']]
+                        );
+                    }
+                    Log::info('更新または作成されるデータ', [
+                        '条件' => ['drawing_id' => $drawing->id],
+                        'データ' => ['bim_drawing_pdf_path' => $filePaths['bim_drawing_name']]
+                    ]);
+
                     if (!empty($filePaths['bim_drawing_name'])) {
                         $drawing->bim_drawing()->updateOrCreate(
                             ['drawing_id' => $drawing->id],
-                            ['bim_drawing_name' => $filePaths['bim_drawing_name']]
+                            ['bim_drawing_pdf_path' => $filePaths['bim_drawing_name']]
                         );
                     }
 
                     // meeting_logデータの取得または更新
+                    if (!empty($filePaths['thumbnail_meeting_log_name'])) {
+                        $project_name->meeting_log()->updateOrCreate(
+                            ['project_id' => $project_name->id],
+                            ['meeting_log_view_pathe' => $filePaths['thumbnail_meeting_log_name']]
+                        );
+                    }
                     if (!empty($filePaths['meeting_log_name'])) {
                         $project_name->meeting_log()->updateOrCreate(
                             ['project_id' => $project_name->id],
-                            ['meeting_log_name' => $filePaths['meeting_log_name']]
+                            ['meeting_log_pdf_path' => $filePaths['meeting_log_name']]
                         );
                     }
 
@@ -268,8 +314,10 @@ class Project_nameController extends Controller
         ])->findOrFail($id);
         Log::info('情報メッセージshow: 変数の値は', ['変数名' => $project_name]);
         // プロジェクト詳細情報をJSONで返却
-        return response()->json(['redirect' => 'Project_name/show',
-         'project_name' => $project_name]); // JSON形式で結果を返しリダイレクト
+        return response()->json([
+            'redirect' => 'Project_name/show',
+            'project_name' => $project_name
+        ]); // JSON形式で結果を返しリダイレクト
     }
 
     //抽出extraction

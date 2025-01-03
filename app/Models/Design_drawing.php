@@ -19,5 +19,7 @@ class Design_drawing extends Model
     protected $fillable = [
         'drawing_id',
         'finishing_table_name',
+        'finishing_table_view_path',
+        'finishing_table_pdf_path',
     ];
 }

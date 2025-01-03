@@ -19,5 +19,7 @@ class Structural_diagram extends Model
     protected $fillable = [
         'drawing_id',
         'floor_plan_name',
+        'floor_plan_view_path',
+        'floor_plan_pdf_path',
     ];
 }

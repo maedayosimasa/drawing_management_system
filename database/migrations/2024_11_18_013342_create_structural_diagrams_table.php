@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->integer('drawing_id');
             $table->string('floor_plan_name')->nullable();
+            $table->string('floor_plan_view_path')->nullable();
+            $table->string('floor_plan_pdf_path')->nullable();
             $table->timestamps();
         });
     }

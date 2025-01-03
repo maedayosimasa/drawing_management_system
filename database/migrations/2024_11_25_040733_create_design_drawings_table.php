@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->integer('drawing_id');
             $table->string('finishing_table_name')->nullable();
+            $table->string('finishing_table_view_path')->nullable();
+            $table->string('finishing_table_pdf_path')->nullable();
             $table->timestamps();
         });
     }

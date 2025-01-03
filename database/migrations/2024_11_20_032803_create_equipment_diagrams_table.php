@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->integer('drawing_id');
             $table->string('machinery_equipment_diagram_all_name')->nullable();
+            $table->string('machinery_equipment_diagram_all_view_path')->nullable();
+            $table->string('machinery_equipment_diagram_all_pdf_path')->nullable();
             $table->timestamps();
         });
     }

@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->integer('project_id');
             $table->string('meeting_log_name')->nullable();
+            $table->string('meeting_log_view_path')->nullable();
+            $table->string('meeting_log_pdf_path')->nullable();
             $table->timestamps();
         });
     }

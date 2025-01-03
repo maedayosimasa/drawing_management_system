@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->integer('drawing_id');
             $table->string('bim_drawing_name')->nullable();
+            $table->string('bim_drawing_view_path')->nullable();
+            $table->string('bim_drawing_pdf_path')->nullable();
             $table->timestamps();
         });
     }

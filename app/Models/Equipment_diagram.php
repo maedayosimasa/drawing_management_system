@@ -19,5 +19,7 @@ class Equipment_diagram extends Model
     protected $fillable = [
         'drawing_id',
         'machinery_equipment_diagram_all_name',
+        'machinery_equipment_diagram_all_view_path',
+        'machinery_equipment_diagram_all_pdf_path',
     ];
 }
