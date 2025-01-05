@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Drawing;
 use App\Models\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
+
 
 
 class Project_nameController extends Controller
@@ -55,7 +57,7 @@ class Project_nameController extends Controller
                     //$originalFileName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $fileFields->getClientOriginalName());
 
                     // ファイルが既に存在する場合は削除（上書き）
-                    $existingFilePath = storage_path('app/uploads/' . $originalFileName);
+                    $existingFilePath = storage_path('app/public/uploads/' . $originalFileName);
                     if (file_exists($existingFilePath)) {
                         // 既存のファイルを削除
                         unlink($existingFilePath);
@@ -74,7 +76,7 @@ class Project_nameController extends Controller
         
                     Log::info("ファイルが保存されました: $filePath");
                     // サムネイル用のディレクトリパス
-                    $thumbnailDirectory = storage_path('app/thumbnails/');
+                    $thumbnailDirectory = storage_path('app/public/thumbnails/');
                     if (!file_exists($thumbnailDirectory)) {
                         mkdir($thumbnailDirectory, 0755, true); // ディレクトリが存在しない場合は作成
                     }
@@ -273,17 +275,29 @@ class Project_nameController extends Controller
             return response()->json(['error' => 'ファイルの処理中にエラーが発生しました。upload'], 500);
         }
     }
-    // public function download($id)
-    // {
-    //     $file = File::findOrFail($id);
 
-    //     $filePath = storage_path('app/public/' . $file->project_name); // 適切なフィールドを指定
-    //     if (!file_exists($filePath)) {
-    //         return response()->json(['message' => 'File not found'], 404);
-    //     }
+    //ダウンロードdownloagメソッド
+    public function download($id)
+    {
+        //  Log::info('情報メッセージextraction: 変数の値は', ['変数名' => $id]);
 
-    //     return response()->download($filePath);
-    // }
+        // `$id` に基づいて特定のプロジェクトを取得
+        $project = project_name::with([
+            'drawing.design_drawing',
+            'drawing.structural_diagram',
+            'drawing.equipment_diagram',
+            'drawing.bim_drawing',
+            'meeting_log',
+        ])->findOrFail($id);
+
+
+        $filePath = storage_path('app/public/' . $project->project_name); // 適切なフィールドを指定
+        if (!file_exists($filePath)) {
+            return response()->json(['message' => 'File not found'], 404);
+        }
+
+        return response()->download($filePath);
+    }
 
 
 
@@ -323,17 +337,6 @@ class Project_nameController extends Controller
         return response()->json(['redirect' => 'Project_name/select', 'project_name' => $project_name]); // JSON形式で結果を返しリダイレクト
     }
 
-
-    //プロジェクト詳細を表示するshowメソッド
-    // public function show(Request $request, $id) {
-    //     $id = $request->query('id');
-    //     Log::info('情報メッセージshow: 変数の値は', ['変数名' => $id]);
-    //     //dd($request->query('id'));  // クエリパラメータの 'id' を取得
-    //     $project_name = project_name::findOrFail($id);
-    //     // dd($id);
-    //     //return view('project_name.show', compact('project_name'));
-    //     return response()->json($project_name); 
-    // }
     public function show($id)
     {
         Log::info('情報メッセージshow: 変数の値は', ['変数名' => $id]);
@@ -354,16 +357,172 @@ class Project_nameController extends Controller
         ]); // JSON形式で結果を返しリダイレクト
     }
 
-    //抽出extraction
     // public function extraction($id)
     // {
+    //     $project = project_name::with([
+    //         'drawing.design_drawing' => function ($query) {
+    //             $query->withViewPath(); // scopeを使う
+    //         },
+    //         'drawing.structural_diagram' => function ($query) {
+    //             $query->withViewPath(); // scopeを使う
+    //         },
+    //         'drawing.equipment_diagram' => function ($query) {
+    //             $query->withViewPath(); // scopeを使う
+    //         },
+    //         'drawing.bim_drawing' => function ($query) {
+    //             $query->withViewPath(); // scopeを使う
+    //         },
+    //         'meeting_log',
+    //     ])->findOrFail($id);
 
-    //     // 部分一致検索を実行
-    //     $project_name = project_name::where('id', $id)->with(['drawing.design_drawing', 'drawing.structural_diagram', 'drawing.equipment_diagram', 'drawing.bim_drawing', 'meeting_log'])->firstOrFail();
-    //     Log::info('情報メッセージextraction: 変数の値は', ['変数名' => $project_name]);
-    //     Log::info('情報メッセージextraction: $project_name', ['変数名' => $project_name]);
-    //     // プロジェクト詳細情報をJSONで返却
-    //     return response()->json($project_name); // JSON形式で結果を返す
+    //     Log::info('取得したプロジェクトjson:', [$project]);
+
+    //     return response()->json([
+    //         'redirect' => 'Project_name/download',
+    //         'jsonFinalResult' => $project
+    //     ]);
+    // }
+
+
+    //抽出extraction downloadへviewパスからjpgのURIを返す
+    public function extraction($id)
+    {
+        // '%_view_path' のカラム名を持つデータをフィルタリングする関数
+        $filterViewPath = function ($items) {
+            Log::info('フィルタリング開始:', ['items' => $items]); // 渡されるitemsを確認
+
+            return collect($items)->filter(function ($value, $key) { // keyとvalue両方を取得
+                Log::info('フィルタリング中のitem:', ['key' => $key, 'value' => $value]);
+
+                // '_view_path' で終わるキーをチェック
+                if (is_string($key) && substr($key, -10) === '_view_path') {
+                    Log::info('該当する_view_pathを発見:', ['key' => $key, 'value' => $value]);
+                    return true; // フィルタリング対象のアイテムを保持
+                }
+
+                return false; // '_view_path' で終わらない場合は除外
+            })->toArray(); // コレクションを配列に変換
+        };
+
+        Log::info('フィルタリング関数準備完了');
+
+        // プロジェクトデータを取得
+        Log::info('プロジェクトデータ取得前:', ['id' => $id]);
+        $project = project_name::with([
+            'drawing.design_drawing',
+            'drawing.structural_diagram',
+            'drawing.equipment_diagram',
+            'drawing.bim_drawing',
+            'meeting_log',
+        ])->findOrFail($id);
+
+        Log::info('プロジェクトデータ取得後:', ['project' => $project]);
+
+        // 各リレーションに対してフィルタリングを適用し、URLを追加
+        $filteredData = [
+            'design_drawing' => $filterViewPath($project->drawing->design_drawing ?? []),
+            'structural_diagram' => $filterViewPath($project->drawing->structural_diagram ?? []),
+            'equipment_diagram' => $filterViewPath($project->drawing->equipment_diagram ?? []),
+            'bim_drawing' => $filterViewPath($project->drawing->bim_drawing ?? []),
+        ];
+
+        // パスを URL に変換（ここでは、public/thumbnails/ に格納されている前提）
+        foreach ($filteredData as $key => $items) {
+            foreach ($items as $itemKey => $itemValue) {
+                // サーバー上のURLを動的に生成
+                $filteredData[$key][$itemKey] = url('thumbnails/' . $itemValue);  // URL変換
+            }
+        }
+
+        // フィルタリング後のデータをJSON形式でログに出力 (エスケープを防ぐ)
+        Log::info('フィルタリング後のデータ (JSON):', [
+            'filteredData' => json_encode($filteredData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
+        ]);
+
+        // フィルタリングされたデータをレスポンスとして返却
+        return response()->json([
+            'redirect' => 'Project_name/download',
+            'filteredData' => $filteredData, // '_view_path' のみ抽出されたデータ（URL付き）
+        ]);
+    }
+
+
+
+
+    // public function extraction($id)
+    // {
+    //   //  Log::info('情報メッセージextraction: 変数の値は', ['変数名' => $id]);
+
+    //     // `$id` に基づいて特定のプロジェクトを取得
+    //     $project = project_name::with([
+    //         'drawing.design_drawing',
+    //         'drawing.structural_diagram',
+    //         'drawing.equipment_diagram',
+    //         'drawing.bim_drawing',
+    //         'meeting_log',
+    //     ])->findOrFail($id);
+
+    //    Log::info('取得したプロジェクトproject:', ['project' => $project]);
+
+    //     // JSON形式でエンコードし、Unicodeエスケープを防止
+    //     $json = json_encode($project, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    //    // Log::info('JSON形式のプロジェクト: ' . $json);
+
+    //     // 再びJSONを配列にデコード
+    //     $array = json_decode($json, true);
+
+    //     // view_pathで終わるキーをフィルタリングする再帰関数
+    //     function filterViewPaths($array)
+    //     {
+    //         $result = [];
+
+    //         foreach ($array as $key => $value) {
+    //             // 正規表現でキーが 'view_path' で終わるかを確認
+    //             if (preg_match('/view_path$/', $key)) {
+    //                 $result[$key] = $value;
+    //             }
+    //             // 値が配列なら再帰的に処理
+    //             elseif (is_array($value)) {
+    //                 $result = array_merge($result, filterViewPaths($value));
+    //             }
+    //         }
+
+    //         return $result;
+    //     }
+
+    //     // フィルタリングされたview_pathを取得
+    //     $filteredAttributes = filterViewPaths($array);
+
+    //    // Log::info('取得した配列形式のプロジェクト: ' . json_encode($array, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+
+    //     // 結果をまとめる
+    //     $finalResult = [];
+
+    //     // テーブル名とIDを最初に追加
+    //     $finalResult[] = [
+    //         'table_name' => $project->getTable(),
+    //         'id' => $project->id,
+    //     ];
+
+    //     // view_path の結果を順番に追加 (URI形式に変換)
+    //     foreach ($filteredAttributes as $key => $value) {
+    //         $finalResult[] = [
+    //             'key' => $key,
+    //             'value' => url($value), // URI形式に変換
+    //         ];
+    //     }
+    //     $jsonFinalResult = json_encode($finalResult, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+
+    //     //Log::info('最終結果 $finalResult: ' . json_encode($finalResult, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+    //     Log::info('取得したプロジェクトjson:', [$jsonFinalResult]);
+
+    //     // $finalResultを取得または設定する処理
+    //     //$finalResult = "Some result"; // 例として文字列を設定
+
+    //     return response()->json([
+    //         'redirect' => 'Project_name/download',
+    //         'jsonFinalResult' => $jsonFinalResult
+    //     ]);
     // }
 
 

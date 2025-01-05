@@ -25,4 +25,8 @@ class Bim_drawing extends Model
         'meeting_log_view_path',
         'meeting_log_pdf_path',
     ];
+    public function scopeWithViewPath($query)
+    {
+        return $query->where('name', 'like', '%_view_path');
+    }
 }

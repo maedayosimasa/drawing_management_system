@@ -48,5 +48,9 @@ class project_name extends Model
     {
         return $this->hasOne(Meeting_log::class, 'project_id');
     }
+    public function scopeWithViewPath($query)
+    {
+        return $query->where('name', 'like', '%_view_path');
+    }
 
 }

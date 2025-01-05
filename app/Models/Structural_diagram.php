@@ -22,4 +22,8 @@ class Structural_diagram extends Model
         'floor_plan_view_path',
         'floor_plan_pdf_path',
     ];
+    public function scopeWithViewPath($query)
+    {
+        return $query->where('name', 'like', '%_view_path');
+    }
 }

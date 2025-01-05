@@ -22,4 +22,8 @@ class Design_drawing extends Model
         'finishing_table_view_path',
         'finishing_table_pdf_path',
     ];
+    public function scopeWithViewPath($query)
+    {
+        return $query->where('name', 'like', '%_view_path');
+    }
 }

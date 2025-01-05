@@ -22,4 +22,8 @@ class Equipment_diagram extends Model
         'machinery_equipment_diagram_all_view_path',
         'machinery_equipment_diagram_all_pdf_path',
     ];
+    public function scopeWithViewPath($query)
+    {
+        return $query->where('name', 'like', '%_view_path');
+    }
 }
