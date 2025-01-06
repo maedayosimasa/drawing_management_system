@@ -394,9 +394,9 @@ class Project_nameController extends Controller
             return collect($items)->filter(function ($value, $key) { // keyとvalue両方を取得
                 Log::info('フィルタリング中のitem:', ['key' => $key, 'value' => $value]);
 
-                // '_view_path' で終わるキーをチェック
-                if (is_string($key) && substr($key, -10) === '_view_path') {
-                    Log::info('該当する_view_pathを発見:', ['key' => $key, 'value' => $value]);
+                // '_view_path' または 'name' で終わるキーをチェック
+                if (is_string($key) && (substr($key, -10) === '_view_path' || substr($key, -5) === '_name')) {
+                    Log::info('該当するキーを発見:', ['key' => $key, 'value' => $value]);
                     return true; // フィルタリング対象のアイテムを保持
                 }
 
@@ -429,8 +429,12 @@ class Project_nameController extends Controller
         // public/thumbnails/）に基づいてURLを変換
         foreach ($filteredData as $key => $items) {
             foreach ($items as $itemKey => $itemValue) {
-                // サーバー上のURLを動的に生成
-                $itemValue = url('storage/' . $itemValue);  // URL変換
+                // パス情報のみをURLに変換
+                // もし$itemValueがパスに該当するならば
+                if (strpos($itemValue, 'public/thumbnails/') !== false) {
+                    // サーバー上のURLを動的に生成
+                    $itemValue = url('storage/' . str_replace('public/', '', $itemValue));  // URL変換
+                }
 
                 // バックスラッシュ（￥）をスラッシュに変換
                 $itemValue = str_replace('\\', '/', $itemValue);
@@ -441,7 +445,7 @@ class Project_nameController extends Controller
                 );
             }
         }
-        
+
 
         // フィルタリング後のデータをJSON形式でログに出力 (エスケープを防ぐ)
         $jsonData = json_encode($filteredData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
