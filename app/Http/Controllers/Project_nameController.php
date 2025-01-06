@@ -461,7 +461,27 @@ foreach ($filteredData as $key => $items) {
         // バックスラッシュが含まれていないか確認
         //Log::info('フィルタリング後の生データ:', ['filteredData' => print_r($filteredData, true)]);
 
+        // 変換後のデータを格納する配列
+        $converted_projects = [];
 
+        // 変換処理
+        foreach ($filteredData as $key => $value) {
+            foreach ($value as $sub_key => $sub_value) {
+                if (str_contains($sub_key, "name")) { // "name"が含まれるキーの場合
+                    $file_name = $sub_value;
+                    // 対応する "view_path" を取得
+                    $view_path_key = str_replace("name", "view_path", $sub_key);
+                    if (array_key_exists($view_path_key, $value)) {
+                        // 新しいキーを作成
+                        $new_key = "{$key}.{$file_name}";
+                        $new_value = $value[$view_path_key];
+                        // 新しいキーと値を配列に追加
+                        $converted_projects[$new_key] = $new_value;
+                    }
+                }
+            }
+        }
+        Log::info('フィルタリング後のデータ$converted_projects:', ['converted_projects' => $converted_projects]);
 
 
         // フィルタリング後のデータをJSON形式でログに出力 (エスケープを防ぐ)
@@ -472,7 +492,7 @@ foreach ($filteredData as $key => $items) {
         // フィルタリングされたデータをレスポンスとして返却
         return response()->json([
             'redirect' => 'Project_name/download',
-            'filteredData' => $filteredData, // '_view_path' のみ抽出されたデータ（URL付き）
+            'filteredData' => $converted_projects, // '_view_path' のみ抽出されたデータ（URL付き）
         ]);
     }
 
