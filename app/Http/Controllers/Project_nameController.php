@@ -426,25 +426,26 @@ class Project_nameController extends Controller
             'bim_drawing' => $filterViewPath($project->drawing->bim_drawing ?? []),
         ];
 
-        // public/thumbnails/）に基づいてURLを変換
-        foreach ($filteredData as $key => $items) {
-            foreach ($items as $itemKey => $itemValue) {
-                // パス情報のみをURLに変換
-                // もし$itemValueがパスに該当するならば
-                if (strpos($itemValue, 'public/thumbnails/') !== false) {
-                    // サーバー上のURLを動的に生成
-                    $itemValue = url('storage/' . str_replace('public/', '', $itemValue));  // URL変換
-                }
-
-                // バックスラッシュ（￥）をスラッシュに変換
-                $itemValue = str_replace('\\', '/', $itemValue);
-
-                // 最後のバックスラッシュが残っている場合を削除
-                $filteredData[$key][$itemKey] = rtrim($itemValue,
-                    '\\'
-                );
-            }
+  // public/thumbnails/）に基づいてURLを変換
+foreach ($filteredData as $key => $items) {
+    foreach ($items as $itemKey => $itemValue) {
+        // パス情報のみをURLに変換
+        if (strpos($itemValue, 'thumbnails/') !== false) {
+            // サーバー上のURLを動的に生成
+            $filteredData[$key][$itemKey] = url('storage/' . str_replace('public/', '', $itemValue)); // URL変換
+        } else {
+            // パス情報がURLでない場合も修正
+            $filteredData[$key][$itemKey] = $itemValue;
         }
+
+        // バックスラッシュ（￥）をスラッシュに変換
+        $filteredData[$key][$itemKey] = str_replace('\\', '/', $filteredData[$key][$itemKey]);
+
+        // 最後のバックスラッシュが残っている場合を削除
+        $filteredData[$key][$itemKey] = rtrim($filteredData[$key][$itemKey], '\\');
+    }
+}
+
 
 
         // フィルタリング後のデータをJSON形式でログに出力 (エスケープを防ぐ)
