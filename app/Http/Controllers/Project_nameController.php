@@ -426,18 +426,43 @@ class Project_nameController extends Controller
             'bim_drawing' => $filterViewPath($project->drawing->bim_drawing ?? []),
         ];
 
-        // パスを URL に変換（ここでは、public/thumbnails/ に格納されている前提）
+        // public/thumbnails/）に基づいてURLを変換
         foreach ($filteredData as $key => $items) {
             foreach ($items as $itemKey => $itemValue) {
                 // サーバー上のURLを動的に生成
-                $filteredData[$key][$itemKey] = url('thumbnails/' . $itemValue);  // URL変換
+                $itemValue = url('storage/' . $itemValue);  // URL変換
+
+                // バックスラッシュ（￥）をスラッシュに変換
+                $itemValue = str_replace('\\', '/', $itemValue);
+
+                // 最後のバックスラッシュが残っている場合を削除
+                $filteredData[$key][$itemKey] = rtrim($itemValue,
+                    '\\'
+                );
             }
         }
+        
 
         // フィルタリング後のデータをJSON形式でログに出力 (エスケープを防ぐ)
-        Log::info('フィルタリング後のデータ (JSON):', [
-            'filteredData' => json_encode($filteredData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
-        ]);
+        $jsonData = json_encode($filteredData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+        // バックスラッシュが残っている場合、それを取り除く
+        $jsonData = stripslashes($jsonData);
+
+        // 修正したデータをログに出力
+        //Log::info('フィルタリング後のデータ (JSON):', ['filteredData' => $jsonData]);
+        // フィルタリング後のデータをそのまま配列としてログに出力
+        Log::info('フィルタリング後のデータ:', ['filteredData' => $filteredData]);
+        // バックスラッシュが含まれていないか確認
+        //Log::info('フィルタリング後の生データ:', ['filteredData' => print_r($filteredData, true)]);
+
+
+
+
+        // フィルタリング後のデータをJSON形式でログに出力 (エスケープを防ぐ)
+        // Log::info('フィルタリング後のデータ (JSON):', [
+        //     'filteredData' => json_encode($filteredData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
+        // ]);
 
         // フィルタリングされたデータをレスポンスとして返却
         return response()->json([

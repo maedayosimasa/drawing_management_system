@@ -1,25 +1,29 @@
 <IfModule mod_rewrite.c>
-    <IfModule mod_negotiation.c>
-        Options -MultiViews -Indexes
-     </IfModule>
+    # ベース設定
     RewriteEngine On
 
-    # Handle Authorization Header
+    # マルチビューとインデックス無効化
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    # Authorization Header の処理
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Redirect Trailing Slashes If Not A Folder...
+    # トレーリングスラッシュのリダイレクト（フォルダ以外の場合）
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
-    # Send Requests To Front Controller...
+    # フロントコントローラーへのルーティング
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+
+    # storageディレクトリのリクエストを適切なパスへリダイレクト
+    RewriteRule ^storage/(.*)$ /storage/app/public/$1 [L]
 </IfModule>
 
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteRule ^storage/(.*)$ /home/itsys/drawing_management_system/storage/app/public/$1 [L]
-</IfModule>
+
+ # RewriteRule ^storage/(.*)$ /home/itsys/drawing_management_system/storage/app/public/$1 [L]
