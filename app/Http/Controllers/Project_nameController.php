@@ -19,7 +19,7 @@ class Project_nameController extends Controller
     public function upload(Request $request)
     {
         try {
-            Log::info('情報メッセージsearch: 変数の値は', ['変数名' => $request]);
+            Log::info('情報メッセージupload: 変数の値は', ['変数名' => $request]);
             //バリデーション
             $validatedData = $request->validate([
                 'id' => 'nullable|max:2048',
@@ -30,7 +30,7 @@ class Project_nameController extends Controller
                 'bim_drawing_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
                 'meeting_log_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
             ]);
-            Log::info('情報メッセージshow: 変数の値は', ['変数名' => $validatedData]);
+            Log::info('情報メッセージupload: 変数の値は', ['変数名' => $validatedData]);
             // ファイルの保存
             $filePaths = [];
             $fileFields = [
@@ -357,39 +357,12 @@ class Project_nameController extends Controller
         ]); // JSON形式で結果を返しリダイレクト
     }
 
-    // public function extraction($id)
-    // {
-    //     $project = project_name::with([
-    //         'drawing.design_drawing' => function ($query) {
-    //             $query->withViewPath(); // scopeを使う
-    //         },
-    //         'drawing.structural_diagram' => function ($query) {
-    //             $query->withViewPath(); // scopeを使う
-    //         },
-    //         'drawing.equipment_diagram' => function ($query) {
-    //             $query->withViewPath(); // scopeを使う
-    //         },
-    //         'drawing.bim_drawing' => function ($query) {
-    //             $query->withViewPath(); // scopeを使う
-    //         },
-    //         'meeting_log',
-    //     ])->findOrFail($id);
-
-    //     Log::info('取得したプロジェクトjson:', [$project]);
-
-    //     return response()->json([
-    //         'redirect' => 'Project_name/download',
-    //         'jsonFinalResult' => $project
-    //     ]);
-    // }
-
-
-    //抽出extraction downloadへviewパスからjpgのURIを返す
+      //抽出extraction downloadへviewパスからjpgのURIを返す
     public function extraction($id)
     {
         // '%_view_path' のカラム名を持つデータをフィルタリングする関数
         $filterViewPath = function ($items) {
-            Log::info('フィルタリング開始:', ['items' => $items]); // 渡されるitemsを確認
+            Log::info('フィルタリング開始items:', ['items' => $items]); // 渡されるitemsを確認
 
             return collect($items)->filter(function ($value, $key) { // keyとvalue両方を取得
                 Log::info('フィルタリング中のitem:', ['key' => $key, 'value' => $value]);
@@ -407,7 +380,7 @@ class Project_nameController extends Controller
         Log::info('フィルタリング関数準備完了');
 
         // プロジェクトデータを取得
-        Log::info('プロジェクトデータ取得前:', ['id' => $id]);
+        Log::info('プロジェクトデータ取得前id:', ['id' => $id]);
         $project = project_name::with([
             'drawing.design_drawing',
             'drawing.structural_diagram',
@@ -416,7 +389,7 @@ class Project_nameController extends Controller
             'meeting_log',
         ])->findOrFail($id);
 
-        Log::info('プロジェクトデータ取得後:', ['project' => $project]);
+        Log::info('プロジェクトデータ取得後project:', ['project' => $project]);
 
         // 各リレーションに対してフィルタリングを適用し、URLを追加
         $filteredData = [
@@ -457,7 +430,7 @@ foreach ($filteredData as $key => $items) {
         // 修正したデータをログに出力
         //Log::info('フィルタリング後のデータ (JSON):', ['filteredData' => $jsonData]);
         // フィルタリング後のデータをそのまま配列としてログに出力
-        Log::info('フィルタリング後のデータ:', ['filteredData' => $filteredData]);
+        Log::info('フィルタリング後のデータfilteredData:', ['filteredData' => $filteredData]);
         // バックスラッシュが含まれていないか確認
         //Log::info('フィルタリング後の生データ:', ['filteredData' => print_r($filteredData, true)]);
 
@@ -495,85 +468,6 @@ foreach ($filteredData as $key => $items) {
             'filteredData' => $converted_projects, // '_view_path' のみ抽出されたデータ（URL付き）
         ]);
     }
-
-
-
-
-    // public function extraction($id)
-    // {
-    //   //  Log::info('情報メッセージextraction: 変数の値は', ['変数名' => $id]);
-
-    //     // `$id` に基づいて特定のプロジェクトを取得
-    //     $project = project_name::with([
-    //         'drawing.design_drawing',
-    //         'drawing.structural_diagram',
-    //         'drawing.equipment_diagram',
-    //         'drawing.bim_drawing',
-    //         'meeting_log',
-    //     ])->findOrFail($id);
-
-    //    Log::info('取得したプロジェクトproject:', ['project' => $project]);
-
-    //     // JSON形式でエンコードし、Unicodeエスケープを防止
-    //     $json = json_encode($project, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-    //    // Log::info('JSON形式のプロジェクト: ' . $json);
-
-    //     // 再びJSONを配列にデコード
-    //     $array = json_decode($json, true);
-
-    //     // view_pathで終わるキーをフィルタリングする再帰関数
-    //     function filterViewPaths($array)
-    //     {
-    //         $result = [];
-
-    //         foreach ($array as $key => $value) {
-    //             // 正規表現でキーが 'view_path' で終わるかを確認
-    //             if (preg_match('/view_path$/', $key)) {
-    //                 $result[$key] = $value;
-    //             }
-    //             // 値が配列なら再帰的に処理
-    //             elseif (is_array($value)) {
-    //                 $result = array_merge($result, filterViewPaths($value));
-    //             }
-    //         }
-
-    //         return $result;
-    //     }
-
-    //     // フィルタリングされたview_pathを取得
-    //     $filteredAttributes = filterViewPaths($array);
-
-    //    // Log::info('取得した配列形式のプロジェクト: ' . json_encode($array, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-
-    //     // 結果をまとめる
-    //     $finalResult = [];
-
-    //     // テーブル名とIDを最初に追加
-    //     $finalResult[] = [
-    //         'table_name' => $project->getTable(),
-    //         'id' => $project->id,
-    //     ];
-
-    //     // view_path の結果を順番に追加 (URI形式に変換)
-    //     foreach ($filteredAttributes as $key => $value) {
-    //         $finalResult[] = [
-    //             'key' => $key,
-    //             'value' => url($value), // URI形式に変換
-    //         ];
-    //     }
-    //     $jsonFinalResult = json_encode($finalResult, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-
-    //     //Log::info('最終結果 $finalResult: ' . json_encode($finalResult, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-    //     Log::info('取得したプロジェクトjson:', [$jsonFinalResult]);
-
-    //     // $finalResultを取得または設定する処理
-    //     //$finalResult = "Some result"; // 例として文字列を設定
-
-    //     return response()->json([
-    //         'redirect' => 'Project_name/download',
-    //         'jsonFinalResult' => $jsonFinalResult
-    //     ]);
-    // }
 
 
 
