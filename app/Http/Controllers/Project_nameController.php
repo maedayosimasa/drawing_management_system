@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\project_name;
 use Illuminate\Support\Facades\DB;
-use App\Models\Drawing;
+use App\Models\drawing; // Drawingモデルをインポート
+use App\Models\meetingLog; // MeetingLogモデルをインポート
 use App\Models\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+
 
 
 
@@ -357,104 +359,168 @@ class Project_nameController extends Controller
         ]); // JSON形式で結果を返しリダイレクト
     }
 
-      //抽出extraction downloadへviewパスからjpgのURIを返す
+
+
+
+    //抽出extraction downloadへviewパスからjpgのURIを返す
     public function extraction($id)
     {
-        // '%_view_path' のカラム名を持つデータをフィルタリングする関数
-        $filterViewPath = function ($items) {
-            Log::info('フィルタリング開始items:', ['items' => $items]); // 渡されるitemsを確認
-
-            return collect($items)->filter(function ($value, $key) { // keyとvalue両方を取得
-                Log::info('フィルタリング中のitem:', ['key' => $key, 'value' => $value]);
-
-                // '_view_path' または 'name' で終わるキーをチェック
-                if (is_string($key) && (substr($key, -10) === '_view_path' || substr($key, -5) === '_name')) {
-                    Log::info('該当するキーを発見:', ['key' => $key, 'value' => $value]);
-                    return true; // フィルタリング対象のアイテムを保持
-                }
-
-                return false; // '_view_path' で終わらない場合は除外
-            })->toArray(); // コレクションを配列に変換
-        };
-
-        Log::info('フィルタリング関数準備完了');
-
-        // プロジェクトデータを取得
-        Log::info('プロジェクトデータ取得前id:', ['id' => $id]);
-        $project = project_name::with([
+        // `$id` に基づいて特定のプロジェクトを取得
+        $projectName = project_name::with([
             'drawing.design_drawing',
             'drawing.structural_diagram',
             'drawing.equipment_diagram',
             'drawing.bim_drawing',
             'meeting_log',
-        ])->findOrFail($id);
+        ])->find($id);
 
-        Log::info('プロジェクトデータ取得後project:', ['project' => $project]);
+        //Log::info('取得したプロジェクト$projectName:', ['$projectName' => $projectName]);
 
-        // 各リレーションに対してフィルタリングを適用し、URLを追加
-        $filteredData = [
-            'design_drawing' => $filterViewPath($project->drawing->design_drawing ?? []),
-            'structural_diagram' => $filterViewPath($project->drawing->structural_diagram ?? []),
-            'equipment_diagram' => $filterViewPath($project->drawing->equipment_diagram ?? []),
-            'bim_drawing' => $filterViewPath($project->drawing->bim_drawing ?? []),
-        ];
-
-  // public/thumbnails/）に基づいてURLを変換
-foreach ($filteredData as $key => $items) {
-    foreach ($items as $itemKey => $itemValue) {
-        // パス情報のみをURLに変換
-        if (strpos($itemValue, 'thumbnails/') !== false) {
-            // サーバー上のURLを動的に生成
-            $filteredData[$key][$itemKey] = url('storage/' . str_replace('public/', '', $itemValue)); // URL変換
-        } else {
-            // パス情報がURLでない場合も修正
-            $filteredData[$key][$itemKey] = $itemValue;
+        // プロジェクトが存在しない場合の処理
+        if (!$projectName) {
+            Log::error('指定されたIDに対応するプロジェクトが見つかりません:', ['id' => $id]);
+            return response()->json(['error' => 'プロジェクトが見つかりません'], 404);
         }
 
-        // バックスラッシュ（￥）をスラッシュに変換
-        $filteredData[$key][$itemKey] = str_replace('\\', '/', $filteredData[$key][$itemKey]);
+        $projectData = collect();
 
-        // 最後のバックスラッシュが残っている場合を削除
-        $filteredData[$key][$itemKey] = rtrim($filteredData[$key][$itemKey], '\\');
-    }
-}
+        // `drawing`が存在する場合のみ処理
+        if ($projectName->drawing) {
+            // `drawing`内の各リレーションをチェックして、空でない場合にデータを追加
+            if (!empty($projectName->drawing->design_drawing)) {
+               // Log::info('design_drawing:', ['design_drawing' => $projectName->drawing->design_drawing]);
+                $projectData = $projectData->merge([$projectName->drawing->design_drawing]);
+            }
 
+            if (!empty($projectName->drawing->structural_diagram)) {
+              //  Log::info('structural_diagram:', ['structural_diagram' => $projectName->drawing->structural_diagram]);
+                $projectData = $projectData->merge([$projectName->drawing->structural_diagram]);
+            }
 
+            if (!empty($projectName->drawing->equipment_diagram)) {
+             //   Log::info('equipment_diagram:', ['equipment_diagram' => $projectName->drawing->equipment_diagram]);
+                $projectData = $projectData->merge([$projectName->drawing->equipment_diagram]);
+            }
 
-        // フィルタリング後のデータをJSON形式でログに出力 (エスケープを防ぐ)
-        $jsonData = json_encode($filteredData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-
-        // バックスラッシュが残っている場合、それを取り除く
-        $jsonData = stripslashes($jsonData);
-
-        // 修正したデータをログに出力
-        //Log::info('フィルタリング後のデータ (JSON):', ['filteredData' => $jsonData]);
-        // フィルタリング後のデータをそのまま配列としてログに出力
-        Log::info('フィルタリング後のデータfilteredData:', ['filteredData' => $filteredData]);
-        // バックスラッシュが含まれていないか確認
-        //Log::info('フィルタリング後の生データ:', ['filteredData' => print_r($filteredData, true)]);
-
-        // 変換後のデータを格納する配列
-        $converted_projects = [];
-
-        // 変換処理
-        foreach ($filteredData as $key => $value) {
-            foreach ($value as $sub_key => $sub_value) {
-                if (str_contains($sub_key, "name")) { // "name"が含まれるキーの場合
-                    $file_name = $sub_value;
-                    // 対応する "view_path" を取得
-                    $view_path_key = str_replace("name", "view_path", $sub_key);
-                    if (array_key_exists($view_path_key, $value)) {
-                        // 新しいキーを作成
-                        $new_key = "{$key}.{$file_name}";
-                        $new_value = $value[$view_path_key];
-                        // 新しいキーと値を配列に追加
-                        $converted_projects[$new_key] = $new_value;
-                    }
-                }
+            if (!empty($projectName->drawing->bim_drawing)) {
+              //  Log::info('bim_drawing:', ['bim_drawing' => $projectName->drawing->bim_drawing]);
+                $projectData = $projectData->merge([$projectName->drawing->bim_drawing]);
             }
         }
-        Log::info('フィルタリング後のデータ$converted_projects:', ['converted_projects' => $converted_projects]);
+
+        // `meeting_log`が存在する場合のみ処理
+        if ($projectName->meeting_log) {
+           // Log::info('meeting_log:', ['meeting_log' => $projectName->meeting_log]);
+            $projectData = $projectData->merge([$projectName->meeting_log]);
+        }
+
+        // コレクションの内容を配列に変換してログに出力
+        Log::info('取得したプロジェクトproject:', ['project' => $projectData]);
+
+        // 正しいデータを返却
+        return response()->json([
+            'redirect' => 'Project_name//download',
+            'filteredData' => $projectData, // 配列として返す
+        ]);
+    }
+
+        
+        
+    //     // 部分一致検索を実行
+    //     $project_name = project_name::where('id', $id)->with(['drawing.design_drawing', 'drawing.structural_diagram', 'drawing.equipment_diagram', 'drawing.bim_drawing', 'meeting_log'])->firstOrFail();
+    //     Log::info('情報メッセージextraction: 変数の値は', ['変数名' => $project_name]);
+    //     Log::info('情報メッセージextraction: $project_name', ['変数名' => $project_name]);ath' のカラム名を持つデータをフィルタリングする関数
+        // $filterViewPath = function ($items) {
+        //     Log::info('フィルタリング開始items:', ['items' => $items]); // 渡されるitemsを確認
+
+        //     return collect($items)->filter(function ($value, $key) { // keyとvalue両方を取得
+        //         Log::info('フィルタリング中のitem:', ['key' => $key, 'value' => $value]);
+
+        //         // '_view_path' または 'name' で終わるキーをチェック
+        //         if (is_string($key) && (substr($key, -10) === '_view_path' || substr($key, -5) === '_name')) {
+        //             Log::info('該当するキーを発見:', ['key' => $key, 'value' => $value]);
+        //             return true; // フィルタリング対象のアイテムを保持
+        //         }
+
+        //         return false; // '_view_path' で終わらない場合は除外
+        //     })->toArray(); // コレクションを配列に変換
+        // };
+
+        // Log::info('フィルタリング関数準備完了');
+
+        // // プロジェクトデータを取得
+        // Log::info('プロジェクトデータ取得前id:', ['id' => $id]);
+        // $project = project_name::with([
+        //     'drawing.design_drawing',
+        //     'drawing.structural_diagram',
+        //     'drawing.equipment_diagram',
+        //     'drawing.bim_drawing',
+        //     'meeting_log',
+        // ])->findOrFail($id);
+
+        // Log::info('プロジェクトデータ取得後project:', ['project' => $project]);
+
+        // // 各リレーションに対してフィルタリングを適用し、URLを追加
+        // $filteredData = [
+        //     'design_drawing' => $filterViewPath($project->drawing->design_drawing ?? []),
+        //     'structural_diagram' => $filterViewPath($project->drawing->structural_diagram ?? []),
+        //     'equipment_diagram' => $filterViewPath($project->drawing->equipment_diagram ?? []),
+        //     'bim_drawing' => $filterViewPath($project->drawing->bim_drawing ?? []),
+        // ];
+
+//   // public/thumbnails/）に基づいてURLを変換
+// foreach ($filteredData as $key => $items) {
+//     foreach ($items as $itemKey => $itemValue) {
+//         // パス情報のみをURLに変換
+//         if (strpos($itemValue, 'thumbnails/') !== false) {
+//             // サーバー上のURLを動的に生成
+//             $filteredData[$key][$itemKey] = url('storage/' . str_replace('public/', '', $itemValue)); // URL変換
+//         } else {
+//             // パス情報がURLでない場合も修正
+//             $filteredData[$key][$itemKey] = $itemValue;
+//         }
+
+//         // バックスラッシュ（￥）をスラッシュに変換
+//         $filteredData[$key][$itemKey] = str_replace('\\', '/', $filteredData[$key][$itemKey]);
+
+//         // 最後のバックスラッシュが残っている場合を削除
+//         $filteredData[$key][$itemKey] = rtrim($filteredData[$key][$itemKey], '\\');
+//     }
+// }
+//         // フィルタリング後のデータをJSON形式でログに出力 (エスケープを防ぐ)
+//         $jsonData = json_encode($filteredData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+//         // バックスラッシュが残っている場合、それを取り除く
+//         $jsonData = stripslashes($jsonData);
+
+//         // 修正したデータをログに出力
+//         Log::info('フィルタリング後のデータ (JSON):', ['filteredData' => $jsonData]);
+//         // フィルタリング後のデータをそのまま配列としてログに出力
+//         Log::info('フィルタリング後のデータfilteredData:', ['filteredData' => $filteredData]);
+//         // バックスラッシュが含まれていないか確認
+//         //Log::info('フィルタリング後の生データ:', ['filteredData' => print_r($filteredData, true)]);
+
+//         // 変換後のデータを格納する配列
+//         $converted_projects = [];
+
+//         // 変換処理
+//         foreach ($filteredData as $key => $value) {
+//             foreach ($value as $sub_key => $sub_value) {
+//                 if (str_contains($sub_key, "name")) { // "name"が含まれるキーの場合
+//                     $file_name = $sub_value;
+//                     // 対応する "view_path" を取得
+//                     $view_path_key = str_replace("name", "view_path", $sub_key);
+//                     if (array_key_exists($view_path_key, $value)) {
+//                         // 新しいキーを作成
+//                         $new_key = "{$key}.{$file_name}";
+//                         $new_value = $value[$view_path_key];
+//                         // 新しいキーと値を配列に追加
+//                         $converted_projects[$new_key] = $new_value;
+//                     }
+//                 }
+//             }
+//         }
+//         Log::info('フィルタリング後のデータ$converted_projects:', ['converted_projects' => $converted_projects]);
 
 
         // フィルタリング後のデータをJSON形式でログに出力 (エスケープを防ぐ)
@@ -463,11 +529,11 @@ foreach ($filteredData as $key => $items) {
         // ]);
 
         // フィルタリングされたデータをレスポンスとして返却
-        return response()->json([
-            'redirect' => 'Project_name/download',
-            'filteredData' => $converted_projects, // '_view_path' のみ抽出されたデータ（URL付き）
-        ]);
-    }
+    //     return response()->json([
+    //         'redirect' => 'Project_name/download',
+    //         'filteredData' => $converted_projects, // '_view_path' のみ抽出されたデータ（URL付き）
+    //     ]);
+    // }
 
 
 
