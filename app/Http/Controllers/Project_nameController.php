@@ -419,7 +419,7 @@ class Project_nameController extends Controller
 
         // 正しいデータを返却
         return response()->json([
-            'redirect' => 'Project_name//download',
+            'redirect' => 'Project_name/download',
             'filteredData' => $projectData, // 配列として返す
         ]);
     }
