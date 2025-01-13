@@ -15,30 +15,22 @@ return [
     |
     */
     //Ractの設定
-    'paths' => ['api/*', 'storage/*'],// APIのパスを許可
-    'allowed_methods' => ['*'],
-    'allowed_origins' => ['http://localhost:5173'], // Reactアプリのオリジン
-    'allowed_headers' => ['*'],
-    'exposed_headers' => [],
-    'max_age' => 0,
-    'supports_credentials' => false,
+    'paths' => ['api/*', 'sanctum/csrf-cookie','storage/*', 'file-url/*',], // CORSを許可するパスを指定
+    'allowed_methods' => ['*'], // 許可するHTTPメソッド（GET, POST, etc.）
+    // 'allowed_origins' => ['*'],
+    'allowed_origins' => explode(',', env('CORS_ALLOWED_ORIGINS', 'http://localhost:5173')),// Reactアプリのオリジン
+    'allowed_headers' => ['*'],// 許可するリクエストヘッダー
+    'exposed_headers' => [], // レスポンスで公開するヘッダー
+    'max_age' => 0, // プリフライトリクエストのキャッシュ時間
+    'supports_credentials' =>  false, // クレデンシャル（Cookieなど）を許可するかどうか
+
+    //'allowed_origins' => explode(',', env('CORS_ALLOWED_ORIGINS', '*')), // 環境変数から取得
 
 
+    'allowed_origins_patterns' => [], // 正規表現で許可するオリジンを指定
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'Access-Control-Allow-Origin' => ['http://localhost:5173'],
 
-    'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
-
-    'allowed_origins_patterns' => [],
-
-    'allowed_headers' => ['*'],
-
-    'exposed_headers' => [],
-
-    'max_age' => 0,
-
-    'supports_credentials' => false,
-
+  
 ];

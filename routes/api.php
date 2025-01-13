@@ -6,6 +6,9 @@ use App\Models\project_name;
 use App\Http\Controllers\Project_nameController;
 use Illuminate\Support\Facades\Log; // Logクラスをインポート
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Response;
+use App\Http\Controllers\ExampleController;
+use App\Http\Controllers\MyController;
 
 
 /*
@@ -64,8 +67,26 @@ Route::get('Project_name/extraction/{id}', [Project_nameController::class, 'extr
 Route::post('Project_name/update', [Project_nameController::class, 'update'])->name('update');
 Route::get('Project_name/update', [Project_nameController::class, 'update'])->name('update');
 
+Route::options('{any}', function () {
+    return response()->json([]);
+})->where('any', '.*');
 
+Route::get('/api/Project_name/download/{file}', function ($file) {
+    $path = storage_path("app/public/uploads/{$file}");  // ファイルパスを設定
 
+    if (!Storage::exists("public/uploads/{$file}")) {
+        abort(404);
+    }
+
+    return Response::download($path);
+});
+
+// 'cors' ミドルウェアを適用
+Route::middleware(['cors'])->group(function () {
+    Route::get('/example', [ExampleController::class, 'index']);
+});
+
+Route::middleware('cors')->get('/example', [MyController::class, 'index']);
 // routes/api.php
 // Route::post('/Project_name', function (Request $request) {
 //     //var_dump($request->all());

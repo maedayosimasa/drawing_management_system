@@ -27,3 +27,17 @@
 
 
  # RewriteRule ^storage/(.*)$ /home/itsys/drawing_management_system/storage/app/public/$1 [L]
+
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "http://localhost:5173"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+    Header set Access-Control-Allow-Credentials "true"
+</IfModule>
+<FilesMatch "\.(txt|pdf|jpg|png|docx)$">
+    Header set Access-Control-Allow-Origin "http://localhost:5173"
+    Header set Access-Control-Allow-Methods "GET, OPTIONS"
+    Header set Access-Control-Allow-Headers "Origin, Content-Type, Authorization"
+    Header set Access-Control-Allow-Credentials "true"
+</FilesMatch>
+
