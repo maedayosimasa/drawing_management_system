@@ -16,7 +16,7 @@ class Kernel extends HttpKernel
     protected $middleware = [
          \App\Http\Middleware\TrustHosts::class,
         \App\Http\Middleware\TrustProxies::class,
-        \Illuminate\Http\Middleware\HandleCors::class,
+        \Illuminate\Http\Middleware\HandleCors::class,// グローバルミドルウェア
         \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
@@ -25,9 +25,9 @@ class Kernel extends HttpKernel
         // \Illuminate\Http\Middleware\ValidateSignature::class,
         // \Fruitcake\Cors\HandleCors::class,
         \App\Http\Middleware\CustomCors::class,
-        \App\Http\Middleware\CorsMiddleware::class, // ここに追加
         //\App\Http\Middleware\CheckForMaintenanceMode::class,
         \App\Http\Middleware\Cors::class, // ★追加
+        \App\Http\Middleware\CORS::class,  // CORSミドルウェアをここに追加
     ];
 
     /**
@@ -45,6 +45,8 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             // \Fruitcake\Cors\HandleCors::class,
             \App\Http\Middleware\Cors::class, // ★追加
+            \App\Http\Middleware\CorsMiddleware::class, // ★追加
+            \App\Http\Middleware\CORS::class,  // 'web'グループにCORSミドルウェアを追加
         ],
 
         'api' => [
@@ -52,7 +54,9 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \Illuminate\Http\Middleware\HandleCors::class,
-            // \Fruitcake\Cors\HandleCors::class,
+            \App\Http\Middleware\CorsMiddleware::class,
+            \App\Http\Middleware\Cors::class, // ★追加
+            \App\Http\Middleware\CORS::class,  // 'api'グループにCORSミドルウェアを追加
         ],
     ];
 
@@ -77,9 +81,10 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
     ];
     protected $routeMiddleware = [
-       
-        'cors' => \App\Http\Middleware\CustomCors::class, // カスタムCORSミドルウェアの登録
+        'cors' => \App\Http\Middleware\CorsMiddleware::class,
     ];
 
+    
 }
+
 

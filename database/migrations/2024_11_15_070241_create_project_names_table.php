@@ -15,18 +15,19 @@ return new class extends Migration
             $table->id();
             $table->integer('user_id');
             $table->string('project_name');
-            $table->string('over_view')->nullable();
             $table->string('address')->nullable();
             $table->string('client')->nullable();
             $table->date('construction_period_start')->nullable();
             $table->date('construction_period_end')->nullable();
             $table->date('completion_date')->nullable();
             $table->integer('constract_amount')->nullable();
+            $table->integer('use')->nullable();
             $table->integer('site_area')->nullable();
             $table->integer('building_area')->nullable();
             $table->integer('total_floor_area')->nullable();
             $table->string('strural')->nullable();
-            $table->integer('floor_number')->nullable();
+            $table->integer('floor_number_underground')->nullable();
+            $table->integer('floor_number＿ｇround')->nullable();
             $table->timestamps();
         });
     }

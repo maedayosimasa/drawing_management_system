@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
 use App\Http\Controllers\ExampleController;
 use App\Http\Controllers\MyController;
-
+use App\Http\Controllers\FileController;
+use App\Http\Middleware\CorsMiddleware;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,7 +25,7 @@ use App\Http\Controllers\MyController;
 
 //RactとのAPIのルート設定
 // Route::get('/project_names', function () {
-//     $project_names = project_name::with(
+//     $project_names = project_name::witexit
 //         // 必要なリレーションを含むプロジェクト名を取得
 //         'drawing.design_drawing',
 //         'drawing.structural_diagram',
@@ -64,8 +65,9 @@ Route::get('Project_name/extraction/{id}', [Project_nameController::class, 'extr
  Route::get('Project_name/select', [Project_nameController::class, 'select'])->name('project_name.select');
 
 //updateの設定
+//
 Route::post('Project_name/update', [Project_nameController::class, 'update'])->name('update');
-Route::get('Project_name/update', [Project_nameController::class, 'update'])->name('update');
+//Route::get('Project_name/update', [Project_nameController::class, 'update'])->name('update');
 
 Route::options('{any}', function () {
     return response()->json([]);
@@ -81,12 +83,56 @@ Route::get('/api/Project_name/download/{file}', function ($file) {
     return Response::download($path);
 });
 
-// 'cors' ミドルウェアを適用
-Route::middleware(['cors'])->group(function () {
-    Route::get('/example', [ExampleController::class, 'index']);
-});
+// Laravelのコントローラーを経由して提供
+Route::get('/storage/uploads/{file}', function ($file) {
+    $path = public_path('storage/uploads/' . $file);
 
-Route::middleware('cors')->get('/example', [MyController::class, 'index']);
+    if (!file_exists($path)) {
+        Log::info('404 - File not found: ' . $file);
+        return response()->json(['error' => 'File not found'], 404);
+    }
+
+    return response()->file($path);
+})->middleware(CorsMiddleware::class);
+// Route::get('/storage/uploads/{file}', function ($file) {
+//     $path = storage_path('storage/uploads/' . $file);
+
+//     if (!file_exists($path)) {
+//         return response()->json(['error' => 'File not found.'], 404)
+//             ->header('Access-Control-Allow-Origin', '*');
+//     }
+
+//     return response()->stream(function () use ($path) {
+//         $stream = fopen($path, 'rb');
+//         fpassthru($stream);
+//         fclose($stream);
+//     }, 200, [
+//         'Content-Type' => mime_content_type($path),
+//         'Content-Disposition' => 'attachment; filename="' . basename($path) . '"',
+//         'Access-Control-Allow-Origin' => '*',
+//     ]);
+// });
+
+// routes/web.php
+
+// Route::get('/storage/uploads/{filename}', function ($filename) {
+//     return response()->file(storage_path('/storage/uploads/' . $filename));
+// })->middleware('cors');
+
+
+// // 'cors' ミドルウェアを適用
+// Route::middleware(['cors'])->group(function () {
+//     Route::get('/example', [ExampleController::class, 'index']);
+// });
+
+// Route::middleware('cors')->get('/example', [MyController::class, 'index']);
+
+// Route::get('/storage/{fileName}', [FileController::class, 'download'])->name('file.download');
+
+// Route::options('/{any}', function () {
+//     return response()->json([], 204);
+// })->where('any', '.*');
+
 // routes/api.php
 // Route::post('/Project_name', function (Request $request) {
 //     //var_dump($request->all());
