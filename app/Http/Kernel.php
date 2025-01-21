@@ -22,12 +22,8 @@ class Kernel extends HttpKernel
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         \App\Http\Middleware\CorsMiddleware::class,
-        // \Illuminate\Http\Middleware\ValidateSignature::class,
-        // \Fruitcake\Cors\HandleCors::class,
-        \App\Http\Middleware\CustomCors::class,
-        //\App\Http\Middleware\CheckForMaintenanceMode::class,
-        \App\Http\Middleware\Cors::class, // ★追加
-        \App\Http\Middleware\CORS::class,  // CORSミドルウェアをここに追加
+
+        'cors' => \App\Http\Middleware\Cors::class, // ここに追加
     ];
 
     /**
@@ -44,9 +40,9 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             // \Fruitcake\Cors\HandleCors::class,
-            \App\Http\Middleware\Cors::class, // ★追加
-            \App\Http\Middleware\CorsMiddleware::class, // ★追加
-            \App\Http\Middleware\CORS::class,  // 'web'グループにCORSミドルウェアを追加
+            //\App\Http\Middleware\Cors::class, // ★追加
+           \App\Http\Middleware\CorsMiddleware::class, // ★追加
+           // \App\Http\Middleware\CORS::class,  // 'web'グループにCORSミドルウェアを追加
         ],
 
         'api' => [
@@ -55,33 +51,13 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \Illuminate\Http\Middleware\HandleCors::class,
             \App\Http\Middleware\CorsMiddleware::class,
-            \App\Http\Middleware\Cors::class, // ★追加
-            \App\Http\Middleware\CORS::class,  // 'api'グループにCORSミドルウェアを追加
+            'cors' => \App\Http\Middleware\Cors::class,// ここに追加
         ],
     ];
-
-    /**
-     * The application's middleware aliases.
-     *
-     * Aliases may be used instead of class names to conveniently assign middleware to routes and groups.
-     *
-     * @var array<string, class-string|string>
-     */
-    protected $middlewareAliases = [
-        'auth' => \App\Http\Middleware\Authenticate::class,
-        'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
-        'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
-        'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
-        'can' => \Illuminate\Auth\Middleware\Authorize::class,
-        'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-        'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
-        'precognitive' => \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
-        'signed' => \App\Http\Middleware\ValidateSignature::class,
-        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-        'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-    ];
+    
     protected $routeMiddleware = [
-        'cors' => \App\Http\Middleware\CorsMiddleware::class,
+        // 他のミドルウェア
+        'cors' => \App\Http\Middleware\Cors::class,//ここに追加
     ];
 
     

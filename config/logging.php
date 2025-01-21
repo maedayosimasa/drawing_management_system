@@ -65,8 +65,7 @@ return [
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
-            'level' => env('LOG_LEVEL', 'info'),
-            'replace_placeholders' => true,
+            'level' => 'debug',  // ここを確認。より詳細なログを出力
         ],
 
         'daily' => [

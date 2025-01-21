@@ -83,17 +83,30 @@ Route::get('/api/Project_name/download/{file}', function ($file) {
     return Response::download($path);
 });
 
+
+
 // Laravelのコントローラーを経由して提供
-Route::get('/storage/uploads/{file}', function ($file) {
+Route::get('Project_name/downloadpdf/{file}', function ($file) {
     $path = public_path('storage/uploads/' . $file);
+
+    Log::info('Request to download file', ['file' => $file]);
+    Log::info('Request to download path', ['path' => $path]);
 
     if (!file_exists($path)) {
         Log::info('404 - File not found: ' . $file);
         return response()->json(['error' => 'File not found'], 404);
     }
 
-    return response()->file($path);
-})->middleware(CorsMiddleware::class);
+    Log::info('Serving file: ' . $file);
+
+    // ファイルをダウンロードレスポンスとして返却
+    return response()->download($path, $file, [
+        'Content-Type' => mime_content_type($path),
+    ]);
+})->middleware('cors');
+
+
+
 // Route::get('/storage/uploads/{file}', function ($file) {
 //     $path = storage_path('storage/uploads/' . $file);
 

@@ -3,32 +3,35 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class CorsMiddleware
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
-     */
     public function handle($request, Closure $next)
     {
-        // プリフライトリクエストの場合、即時レスポンスを返す
-        if ($request->getMethod() === 'OPTIONS') {
-            return response('', 200)
-                ->header('Access-Control-Allow-Origin', 'http://localhost:5173')
-                ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-                ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-        }
-
-        // 通常リクエストの場合、レスポンスヘッダーを追加
         $response = $next($request);
 
-        return $response
-            ->header('Access-Control-Allow-Origin', 'http://localhost:5173')
-            ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-            ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        // CORS ヘッダーの設定
+        $corsHeaders = [
+            'Access-Control-Allow-Origin' => 'http://localhost:5173',
+            'Access-Control-Allow-Methods' => 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers' => 'Content-Type, Authorization',
+        ];
+
+        // BinaryFileResponse の場合もヘッダーを設定
+        if ($response instanceof BinaryFileResponse) {
+            foreach ($corsHeaders as $key => $value) {
+                $response->headers->set($key, $value);
+            }
+            return $response;
+        }
+
+        // 通常のレスポンスにもヘッダーを設定
+        foreach ($corsHeaders as $key => $value) {
+            $response->headers->set($key, $value);
+        }
+
+        return $response;
     }
 }
+
