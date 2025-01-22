@@ -25,8 +25,20 @@ class Project_nameController extends Controller
             //バリデーション
             $validatedData = $request->validate([
                 'id' => 'nullable|max:2048',
-                'project_name' => 'required|file|mimes:jpg,png,pdf|max:204800', // 最大200MB
-                'finishing_table_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'project_name' => 'required|string|max:2048', 
+                'address' => 'nullable|string|max:2048',
+                'client' => 'nullable|string|max:2048',
+                'construction_period_start' => 'nullable|date|max:2048',
+                'construction_period_end' => 'nullable|date|max:2048',
+                'construct_amount' => 'nullable|date|max:2048',
+                'use' => 'nullable|string|max:2048',
+                'site_area' => 'nullable|string|max:2048',
+                'building_area' => 'nullable|string|max:2048',
+                'total_floor_area' => 'nullable|string|max:2048',
+                'strual' => 'nullable|string|max:2048',
+                'floor_number_underground' => 'nullable|string|max:2048',
+                'floor_number_ground' => 'nullable|string|max:2048',
+                'finishing_table_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',// 最大200MB
                 'floor_plan_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
                 'machinery_equipment_diagram_all_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
                 'bim_drawing_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
@@ -37,7 +49,7 @@ class Project_nameController extends Controller
             $filePaths = [];
             $fileFields = [
                 'id',
-                'project_name',
+                //'project_name',
                 'finishing_table_name',
                 'floor_plan_name',
                 'machinery_equipment_diagram_all_name',
@@ -46,6 +58,13 @@ class Project_nameController extends Controller
             ];
 
             foreach ($fileFields as $fileKey) {
+                $file = $request->file($fileKey);
+
+                // 空部分や無効なキー（string, data）をスキップ
+                if (empty($fileKey) || $fileKey === 'string' || $fileKey === 'data') {
+                    continue;
+                }
+
                 $file = $request->file($fileKey);
 
                 if ($file && $file->isValid()) { // ファイルが存在し、有効な場合のみ処理

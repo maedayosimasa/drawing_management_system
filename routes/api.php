@@ -50,7 +50,7 @@ Route::post('Project_name', [Project_nameController::class, 'upload'])->name('up
 
 //seachのルート設定
 Route::post('Project_name/search', [Project_nameController::class, 'search'])->name('search');
-//Route::get('Project_name/select', [Project_nameController::class, 'select'])->name('select');
+Route::get('Project_name/select', [Project_nameController::class, 'select'])->name('select');
 
 //showのルート設定
 Route::post('Project_name/show', [Project_nameController::class, 'show'])->name('show');
