@@ -70,7 +70,7 @@ class Project_nameController extends Controller
             $filePaths = [];
             $fileFields = [
                 'id',
-                'project_name',
+                //'project_name',
                 'finishing_table_name',
                 'layout_diagram_name',
                 'floor_plan_name',
@@ -228,6 +228,7 @@ class Project_nameController extends Controller
                             'sectional_view_path' => $filePaths[$thumbnailKey],
                             'design_drawing_all_view_path' => $filePaths[$thumbnailKey]],
                         );
+                        Log::info("サムネイルパスdrawingka確認: $thumbnailKey , $filePaths");
                     } else {
                         Log::warning("サムネイルパスが見つかりません: $thumbnailKey");
                     }
@@ -239,7 +240,7 @@ class Project_nameController extends Controller
                             'layout_diagram_pdf_path' => $filePaths['layout_diagram_name'],
                             'floor_plan_pdf_path' => $filePaths['floor_plan_name'],
                             'elevation_pdf_path' => $filePaths['elevation_name'],
-                           'sectiona_pdf_path' => $filePaths['sectiona_name'],
+                            'sectiona_pdf_path' => $filePaths['sectional_name'],
                             'design_drawing_all_pdf_path' => $filePaths['design_drawing_all_name']],
                         );
                     }
