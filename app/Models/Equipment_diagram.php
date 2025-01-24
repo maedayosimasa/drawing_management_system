@@ -21,6 +21,9 @@ class Equipment_diagram extends Model
         'machinery_equipment_diagram_all_name',
         'machinery_equipment_diagram_all_view_path',
         'machinery_equipment_diagram_all_pdf_path',
+        'electrical_equipment_diagram_all_name',
+        'electrical_equipment_diagram_all_view_path',
+        'electrical_equipment_diagram_all_pdf_path',
     ];
     public function scopeWithViewPath($query)
     {

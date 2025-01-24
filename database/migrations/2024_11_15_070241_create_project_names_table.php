@@ -27,7 +27,7 @@ return new class extends Migration
             $table->integer('total_floor_area')->nullable();
             $table->string('strural')->nullable();
             $table->integer('floor_number_underground')->nullable();
-            $table->integer('floor_number＿ｇround')->nullable();
+            $table->integer('floor_number_ground')->nullable();
             $table->timestamps();
         });
     }

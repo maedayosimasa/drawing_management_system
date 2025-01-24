@@ -21,6 +21,21 @@ class Design_drawing extends Model
         'finishing_table_name',
         'finishing_table_view_path',
         'finishing_table_pdf_path',
+        'layout_diagram_name',
+        'layout_diagram_view_path',
+        'layout_diagram_pdf_path',
+        'floor_plan_name',
+        'floor_plan_view_path',
+        'floor_plan_pdf_path',
+        'elevation_name',
+        'elevation_view_path',
+        'elevation_pdf_path',
+        'sectional_name',
+        'sectional_view_path',
+        'sectional_pdf_path',
+        'design_drawing_all_name',
+        'design_drawing_all_view_path',
+        'design_drawing_all_pdf_path',
     ];
     public function scopeWithViewPath($query)
     {

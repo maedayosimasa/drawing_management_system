@@ -30,31 +30,71 @@ class Project_nameController extends Controller
                 'client' => 'nullable|string|max:2048',
                 'construction_period_start' => 'nullable|date|max:2048',
                 'construction_period_end' => 'nullable|date|max:2048',
-                'construct_amount' => 'nullable|date|max:2048',
+                'completion_date' => 'nullable|date|max:2048',
+                'constract_amount' => 'nullable|string|max:2048',
                 'use' => 'nullable|string|max:2048',
                 'site_area' => 'nullable|string|max:2048',
                 'building_area' => 'nullable|string|max:2048',
                 'total_floor_area' => 'nullable|string|max:2048',
-                'strual' => 'nullable|string|max:2048',
+                'strural' => 'nullable|string|max:2048',
                 'floor_number_underground' => 'nullable|string|max:2048',
                 'floor_number_ground' => 'nullable|string|max:2048',
-                'finishing_table_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',// 最大200MB
+
+                'finishing_table_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800', // 最大200MB
+                'layout_diagram_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
                 'floor_plan_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'elevation_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'sectional_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'design_drawing_all_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+
+                'structural_floor_plan_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'structural_elevation_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'structural_sectional_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'structural_frame_diagram_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'structural_diagram_all_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+
                 'machinery_equipment_diagram_all_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'electrical_equipment_diagram_all_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+
                 'bim_drawing_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+
                 'meeting_log_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'delivery_documents_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'bidding_documents_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'archived_photo_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'contract_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'management_documents_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
             ]);
-            Log::info('情報メッセージupload: 変数の値は', ['変数名' => $validatedData]);
+            Log::info('情報メッセージupload:バリデーション', ['変数名' => $validatedData]);
             // ファイルの保存
             $filePaths = [];
             $fileFields = [
                 'id',
-                //'project_name',
+                'project_name',
                 'finishing_table_name',
+                'layout_diagram_name',
                 'floor_plan_name',
+                'elevation_name',
+                'sectional_name',
+                'design_drawing_all_name',
+
+                'structural_floor_plan_name',
+                'structural_elevation_name',
+                'structural_sectional_name',
+                'structural_frame_diagram_name',
+                'structural_diagram_all_name',
+
                 'machinery_equipment_diagram_all_name',
+                'electrical_equipment_diagram_all_name',
+
                 'bim_drawing_name',
+
                 'meeting_log_name',
+                'delivery_documents_name',
+                'bidding_documents_name',
+                'archived_photo_name',
+                'contract_name',
+                'management_documents_name',
             ];
 
             foreach ($fileFields as $fileKey) {
@@ -95,7 +135,7 @@ class Project_nameController extends Controller
                     // ];
 
         
-                    Log::info("ファイルが保存されました: $filePath");
+                    Log::info("storageにファイルが保存されました: $filePath");
                     // サムネイル用のディレクトリパス
                     $thumbnailDirectory = storage_path('app/public/thumbnails/');
                     if (!file_exists($thumbnailDirectory)) {
@@ -140,7 +180,20 @@ class Project_nameController extends Controller
                         ['id' => $validatedData['id'] ?? null],
                         [
                             'user_id' => $user_id,
-                            'project_name' => $filePaths['project_name'] ?? null,
+                            'project_name' => $validatedData['project_name'] ?? 'デフォルトプロジェクト名',
+                            'address' => $validatedData['address'] ?? null,
+                            'client' => $validatedData['client'] ?? null,
+                            'construction_period_start' => $validatedData['construction_period_start'] ?? null,
+                            'construction_period_end' => $validatedData['construction_period_end'] ?? null,
+                            'completion_date' => $validatedData['completion_date'] ?? null,
+                            'constract_amount' => $validatedData['constract_amount'] ?? null,
+                            'use' => $validatedData['use'] ?? null,
+                            'site_area' => $validatedData['site_area'] ?? null,
+                            'building_area' => $validatedData['building_area'] ?? null,
+                            'total_floor_area' => $validatedData['total_floor_area'] ?? null,
+                            'strural' => $validatedData['strural'] ?? null,
+                            'floor_number_underground' => $validatedData['floor_number_underground'] ?? null,
+                            'floor_number_ground' => $validatedData['floor_number_ground'] ?? null,
                         ]
                     );
 
@@ -155,7 +208,12 @@ class Project_nameController extends Controller
                     if (!empty($filePaths['finishing_table_name_file'])) {
                         $drawing->design_drawing()->updateOrCreate(
                             ['drawing_id' => $drawing->id],
-                            ['finishing_table_name' => $filePaths['finishing_table_name_file']]
+                            ['finishing_table_name' => $filePaths['finishing_table_name_file'],
+                            'layout_diagram_name' => $filePaths['layout_diagram_name_file'],
+                            'floor_plan_name' => $filePaths['floor_plan_name_file'],
+                            'elevation_name' => $filePaths['elevation_name_file'],
+                            'sectional_name' => $filePaths['sectional_name_file'],
+                            'design_drawing_all_name' => $filePaths['design_drawing_all_name_file']]
                         );
                     }
                     $thumbnailKey = 'finishing_table_name_thumbnail';  // 'finishing_table_name' に対応するサムネイルキー
@@ -163,7 +221,12 @@ class Project_nameController extends Controller
                        // Log::info("サムネイルパスが見つかりました: " . $filePaths[$thumbnailKey]);
                         $drawing->design_drawing()->updateOrCreate(
                             ['drawing_id' => $drawing->id],
-                            ['finishing_table_view_path' => $filePaths[$thumbnailKey]]
+                            ['finishing_table_view_path' => $filePaths[$thumbnailKey],
+                            'layout_diagram_view_path' => $filePaths[$thumbnailKey],
+                             'floor_plan_view_path' => $filePaths[$thumbnailKey],
+                            'elevation_view_path' => $filePaths[$thumbnailKey],
+                            'sectional_view_path' => $filePaths[$thumbnailKey],
+                            'design_drawing_all_view_path' => $filePaths[$thumbnailKey]],
                         );
                     } else {
                         Log::warning("サムネイルパスが見つかりません: $thumbnailKey");
@@ -172,7 +235,12 @@ class Project_nameController extends Controller
                     if (!empty($filePaths['finishing_table_name'])) {
                         $drawing->design_drawing()->updateOrCreate(
                             ['drawing_id' => $drawing->id],
-                            ['finishing_table_pdf_path' => $filePaths['finishing_table_name']]
+                            ['finishing_table_pdf_path' => $filePaths['finishing_table_name'],
+                            'layout_diagram_pdf_path' => $filePaths['layout_diagram_name'],
+                            'floor_plan_pdf_path' => $filePaths['floor_plan_name'],
+                            'elevation_pdf_path' => $filePaths['elevation_name'],
+                           'sectiona_pdf_path' => $filePaths['sectiona_name'],
+                            'design_drawing_all_pdf_path' => $filePaths['design_drawing_all_name']],
                         );
                     }
 
@@ -181,19 +249,31 @@ class Project_nameController extends Controller
                     if (!empty($filePaths['floor_plan_name_file'])) {
                         $drawing->structural_diagram()->updateOrCreate(
                             ['drawing_id' => $drawing->id],
-                            ['floor_plan_name' => $filePaths['floor_plan_name_file']]
+                            ['structural_floor_plan_name' => $filePaths['structural_floor_plan_name_file']],
+                            // ['structural_elevation_name' => $filePaths['structural_elevation_name_file']],
+                            // ['structural_sectional_name' => $filePaths['structural_sectional_name_file']],
+                            // ['structural_frame_diagram_name' => $filePaths['structural_frame_diagram_name_file']],
+                            // ['structural_diagram_all_name' => $filePaths['structural_diagram_all_name_file']],
                         );
                     }
                     if (!empty($filePaths['floor_plan_name_thumbnail'])) {
                         $drawing->structural_diagram()->updateOrCreate(
                             ['drawing_id' => $drawing->id],
-                            ['floor_plan_view_path' => $filePaths['floor_plan_name_thumbnail']]
+                            ['structural_floor_plan_view_path' => $filePaths['structural_floor_plan_name_thumbnail']],
+                            // ['structural_elevation_view_path' => $filePaths['structural_elevation_name_thumbnail']],
+                            // ['structural_sectional_view_path' => $filePaths['structural_sectional_name_thumbnail']],
+                            // ['structural_frame_diagram_view_path' => $filePaths['structural_frame_diagram_name_thumbnail']],
+                            // ['structural_diagram_all_view_path' => $filePaths['structural_diagram_all_name_thumbnail']],
                         );
                     }
                     if (!empty($filePaths['floor_plan_name'])) {
                         $drawing->structural_diagram()->updateOrCreate(
                             ['drawing_id' => $drawing->id],
-                            ['floor_plan_pdf_path' => $filePaths['floor_plan_name']]
+                            ['structural_floor_plan_pdf_path' => $filePaths['structural_floor_plan_name']],
+                            // ['structural_elevation_pdf_path' => $filePaths['structural_elevation_name']],
+                            // ['structural_sectional_pdf_path' => $filePaths['structural_sectional_name']],
+                            // ['structural_frame_diagram_pdf_path' => $filePaths['structural_frame_diagram_name']],
+                            // ['structural_diagram_all_pdf_path' => $filePaths['structural_diagram_all_name']],
                         );
                     }
 
@@ -201,19 +281,22 @@ class Project_nameController extends Controller
                     if (!empty($filePaths['machinery_equipment_diagram_all_name_file'])) {
                         $drawing->equipment_diagram()->updateOrCreate(
                             ['drawing_id' => $drawing->id],
-                            ['machinery_equipment_diagram_all_name' => $filePaths['machinery_equipment_diagram_all_name_file']]
+                            ['machinery_equipment_diagram_all_name' => $filePaths['machinery_equipment_diagram_all_name_file']],
+                            // ['electrical_equipment_diagram_all_name' => $filePaths['electrical_equipment_diagram_all_name_file']],
                         );
                     }
                     if (!empty($filePaths['machinery_equipment_diagram_all_name_thumbnail'])) {
                         $drawing->equipment_diagram()->updateOrCreate(
                             ['drawing_id' => $drawing->id],
-                            ['machinery_equipment_diagram_all_view_path' => $filePaths['machinery_equipment_diagram_all_name_thumbnail']]
+                            ['machinery_equipment_diagram_all_view_path' => $filePaths['machinery_equipment_diagram_all_name_thumbnail']],
+                            // ['electrical_equipment_diagram_all_view_path' => $filePaths['electrical_equipment_diagram_all_name_thumbnail']],
                         );
                     }
                     if (!empty($filePaths['machinery_equipment_diagram_all_name'])) {
                         $drawing->equipment_diagram()->updateOrCreate(
                             ['drawing_id' => $drawing->id],
-                            ['machinery_equipment_diagram_all_pdf_path' => $filePaths['machinery_equipment_diagram_all_name']]
+                            ['machinery_equipment_diagram_all_pdf_path' => $filePaths['machinery_equipment_diagram_all_name']],
+                            // ['electrical_equipment_diagram_all_pdf_path' => $filePaths['electrical_equipment_diagram_all_name']],
                         );
                     }
 
@@ -246,19 +329,34 @@ class Project_nameController extends Controller
                     if (!empty($filePaths['meeting_log_name_file'])) {
                         $project_name->meeting_log()->updateOrCreate(
                             ['project_id' => $project_name->id],
-                            ['meeting_log_name' => $filePaths['meeting_log_name_file']]
+                            ['meeting_log_name' => $filePaths['meeting_log_name_file']],
+                            // ['delivery_documents_name' => $filePaths['delivery_documents_name_file']],
+                            // ['bidding_documents_name' => $filePaths['bidding_documents_name_file']],
+                            // ['archived_photo_name' => $filePaths['archived_photo_name_file']],
+                            // ['contract_name' => $filePaths['contract_name_file']],
+                            // ['management_documents_name' => $filePaths['management_documents_name_file']],
                         );
                     }
                     if (!empty($filePaths['meeting_log_name_thumbnail'])) {
                         $project_name->meeting_log()->updateOrCreate(
                             ['project_id' => $project_name->id],
-                            ['meeting_log_view_path' => $filePaths['meeting_log_name_thumbnail']]
+                            ['meeting_log_view_path' => $filePaths['meeting_log_name_thumbnail']],
+                            // ['delivery_documents_view_path' => $filePaths['delivery_documents_name_thumbnail']],
+                            // ['bidding_documents_view_path' => $filePaths['bidding_documents_name_thumbnail']],
+                            // ['archived_photo_view_path' => $filePaths['archived_photo_name_thumbnail']],
+                            // ['contract_view_path' => $filePaths['contract_name_thumbnail']],
+                            // ['meeting_log_view_path' => $filePaths['meeting_log_name_thumbnail']],
                         );
                     }
                     if (!empty($filePaths['meeting_log_name'])) {
                         $project_name->meeting_log()->updateOrCreate(
                             ['project_id' => $project_name->id],
-                            ['meeting_log_pdf_path' => $filePaths['meeting_log_name']]
+                            ['meeting_log_pdf_path' => $filePaths['meeting_log_name']],
+                            // ['delivery_documents_pdf_path' => $filePaths['delivery_documents_name']],
+                            // ['bidding_documents_pdf_path' => $filePaths['bidding_documents_name']],
+                            // ['archived_photo_pdf_path' => $filePaths['archived_photo_name']],
+                            // ['contract_pdf_path' => $filePaths['contract_name']],
+                            // ['management_documents_pdf_path' => $filePaths['management_documents_name']],
                         );
                     }
 
@@ -272,7 +370,7 @@ class Project_nameController extends Controller
                     );
                 } catch (\Exception $e) {
                     // エラーログとレスポンス
-                    Log::error("エラーupload: " . $e->getMessage());
+                    Log::error("エラーuploadできません: " . $e->getMessage());
                     return response()->json(['error' => 'ファイルの処理中にエラーが発生しました。upload'], 500);
                 }
             });

@@ -22,8 +22,6 @@ class Bim_drawing extends Model
         'bim_drawing_name',
         'bim_drawing_view_path',
         'bim_drawing_pdf_path',
-        'meeting_log_view_path',
-        'meeting_log_pdf_path',
     ];
     public function scopeWithViewPath($query)
     {

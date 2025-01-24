@@ -17,18 +17,19 @@ class project_name extends Model
     protected $fillable = [
         'user_id',
         'project_name',
-        'over_view',
         'address',
         'client',
         'construction_period_start',
         'construction_period_end',
         'completion_date',
         'constract_amount',
+        'use',
         'site_area',
         'building_area',
         'total_floor_area',
         'strural',
-        'floor_number',
+        'floor_number_underground',
+        'floor_number_ground',
     ];
 
     //リレーション設定

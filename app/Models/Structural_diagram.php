@@ -18,9 +18,21 @@ class Structural_diagram extends Model
 
     protected $fillable = [
         'drawing_id',
-        'floor_plan_name',
-        'floor_plan_view_path',
-        'floor_plan_pdf_path',
+        'structural_floor_plan_name',
+        'structural_floor_plan_view_path',
+        'structural_floor_plan_pdf_path',
+        'structural_elevation_name',
+        'structural_elevation_view_path',
+        'structural_elevation_pdf_path',
+        'structural_sectional_name',
+        'structural_sectional_view_path',
+        'structural_sectional_pdf_path',
+        'structural_frame_diagram_name',
+        'structural_frame_diagram_view_path',
+        'structural_frame_diagram_pdf_path',
+        'structural_diagram_all_name',
+        'structural_diagram_all_view_path',
+        'structural_diagram_all_pdf_path',
     ];
     public function scopeWithViewPath($query)
     {

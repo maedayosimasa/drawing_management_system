@@ -17,6 +17,21 @@ return new class extends Migration
             $table->string('meeting_log_name')->nullable();
             $table->string('meeting_log_view_path')->nullable();
             $table->string('meeting_log_pdf_path')->nullable();
+            $table->string('delivery_documents_name')->nullable();
+            $table->string('delivery_documents_view_path')->nullable();
+            $table->string('delivery_documents_pdf_path')->nullable();
+            $table->string('bidding_documents_name')->nullable();
+            $table->string('bidding_documents_view_path')->nullable();
+            $table->string('bidding_documents_pdf_path')->nullable();
+            $table->string('archived_photo_name')->nullable();
+            $table->string('archived_photo_view_path')->nullable();
+            $table->string('archived_photo_pdf_path')->nullable();
+            $table->string('contract_name')->nullable();
+            $table->string('contract_view_path')->nullable();
+            $table->string('contract_pdf_path')->nullable();
+            $table->string('management_documents_name')->nullable();
+            $table->string('management_documents_view_path')->nullable();
+            $table->string('management_documents_pdf_path')->nullable();
             $table->timestamps();
         });
     }
