@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Bim_drawing extends Model
 {
 
     //リレーション設定 bim_drawing << drawing
-    public function drawing()
+    public function drawing(): BelongsTo
     {
         return $this->belongsTo(Drawing::class, 'drawing_id');
     }

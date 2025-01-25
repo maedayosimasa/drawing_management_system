@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Structural_diagram extends Model
 {
     //リレーション設定 structural_diagram  << drawing
-    public function drawing()
+     public function drawing(): BelongsTo
     {
         return $this->belongsTo(Drawing::class, 'drawing_id');
     }

@@ -4,11 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Meeting_log extends Model
 {
     //リレーション設定 bim_drawing << meeting_log
-    public function project_name()
+    public function drawing(): BelongsTo
     {
         return $this->belongsTo(project_name::class, 'project_id');
     }
