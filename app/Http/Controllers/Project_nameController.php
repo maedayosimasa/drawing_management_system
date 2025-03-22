@@ -236,11 +236,11 @@ class Project_nameController extends Controller
                         'meeting_log_name',
                     ];
 
-                    foreach ($requiredKeys as $key) {
-                        if (!array_key_exists($key, $filePaths)) {
-                            throw new \Exception("Missing required key in filePaths: $key");
-                        }
-                    }
+                    // foreach ($requiredKeys as $key) {
+                    //     if (!array_key_exists($key, $filePaths)) {
+                    //         throw new \Exception("Missing required key in filePaths: $key");
+                    //     }
+                    // }
 
                     Log::info('structural_floor_plan_pdf_path の値', ['value' => $filePaths['structural_floor_plan_name'] ?? '未設定']);
                     // design_drawingデータの取得または更新
