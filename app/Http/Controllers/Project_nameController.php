@@ -40,30 +40,30 @@ class Project_nameController extends Controller
                 'floor_number_underground' => 'nullable|string|max:2048',
                 'floor_number_ground' => 'nullable|string|max:2048',
 
-                'finishing_table_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800', // 最大200MB
-                'layout_diagram_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
-                'floor_plan_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
-                'elevation_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
-                'sectional_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
-                'design_drawing_all_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'finishing_table_name' => 'nullable|file|mimes:jpg,png,pdf|max:209715200', // 最大200MB
+                'layout_diagram_name' => 'nullable|file|mimes:jpg,png,pdf|max:209715200',
+                'floor_plan_name' => 'nullable|file|mimes:jpg,png,pdf|max:209715200',
+                'elevation_name' => 'nullable|file|mimes:jpg,png,pdf|max:209715200',
+                'sectional_name' => 'nullable|file|mimes:jpg,png,pdf|max:209715200',
+                'design_drawing_all_name' => 'nullable|file|mimes:jpg,png,pdf|max:209715200',
 
-                'structural_floor_plan_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
-                'structural_elevation_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
-                'structural_sectional_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
-                'structural_frame_diagram_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
-                'structural_diagram_all_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'structural_floor_plan_name' => 'nullable|file|mimes:jpg,png,pdf|max:209715200',
+                'structural_elevation_name' => 'nullable|file|mimes:jpg,png,pdf|max:209715200',
+                'structural_sectional_name' => 'nullable|file|mimes:jpg,png,pdf|max:209715200',
+                'structural_frame_diagram_name' => 'nullable|file|mimes:jpg,png,pdf|max:209715200',
+                'structural_diagram_all_name' => 'nullable|file|mimes:jpg,png,pdf|max:209715200',
 
-                'machinery_equipment_diagram_all_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
-                'electrical_equipment_diagram_all_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'machinery_equipment_diagram_all_name' => 'nullable|file|mimes:jpg,png,pdf|max:209715200',
+                'electrical_equipment_diagram_all_name' => 'nullable|file|mimes:jpg,png,pdf|max:209715200',
 
-                'bim_drawing_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'bim_drawing_name' => 'nullable|file|mimes:jpg,png,pdf|max:209715200',
 
-                'meeting_log_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
-                'delivery_documents_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
-                'bidding_documents_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
-                'archived_photo_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
-                'contract_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
-                'management_documents_name' => 'nullable|file|mimes:jpg,png,pdf|max:204800',
+                'meeting_log_name' => 'nullable|file|mimes:jpg,png,pdf|max:209715200',
+                'delivery_documents_name' => 'nullable|file|mimes:jpg,png,pdf|max:209715200',
+                'bidding_documents_name' => 'nullable|file|mimes:jpg,png,pdf|max:209715200',
+                'archived_photo_name' => 'nullable|file|mimes:jpg,png,pdf|max:209715200',
+                'contract_name' => 'nullable|file|mimes:jpg,png,pdf|max:209715200',
+                'management_documents_name' => 'nullable|file|mimes:jpg,png,pdf|max:209715200',
             ]);
             Log::info('情報メッセージupload:バリデーション', ['変数名' => $validatedData]);
             // ファイルの保存
@@ -203,38 +203,38 @@ class Project_nameController extends Controller
                     Log::info('validatedDat 全体の配列の内容', $validatedData);
 
                     // 必要なキーの確認
-                    $requiredKeys = [
-                        'finishing_table_name_file',
-                        'finishing_table_name_thumbnail',
-                        'finishing_table_name',
-                        'layout_diagram_name_file',
-                        'layout_diagram_name_thumbnail',
-                        'layout_diagram_name',
-                        'floor_plan_name_file',
-                        'floor_plan_name_thumbnail',
-                        'floor_plan_name',
-                        'elevation_name_file',
-                        'elevation_name_thumbnail',
-                        'elevation_name',
-                        'sectional_name_file',
-                        'sectional_name_thumbnail',
-                        'sectional_name',
-                        'design_drawing_all_name_file',
-                        'design_drawing_all_name_thumbnail',
-                        'design_drawing_all_name',
-                        'structural_floor_plan_name_file',
-                        'structural_floor_plan_name_thumbnail',
-                        'structural_floor_plan_name',
-                        'machinery_equipment_diagram_all_name_file',
-                        'machinery_equipment_diagram_all_name_thumbnail',
-                        'machinery_equipment_diagram_all_name',
-                        'bim_drawing_name_file',
-                        'bim_drawing_name_thumbnail',
-                        'bim_drawing_name',
-                        'meeting_log_name_file',
-                        'meeting_log_name_thumbnail',
-                        'meeting_log_name',
-                    ];
+                    // $requiredKeys = [
+                    //     'finishing_table_name_file',
+                    //     'finishing_table_name_thumbnail',
+                    //     'finishing_table_name',
+                    //     'layout_diagram_name_file',
+                    //     'layout_diagram_name_thumbnail',
+                    //     'layout_diagram_name',
+                    //     'floor_plan_name_file',
+                    //     'floor_plan_name_thumbnail',
+                    //     'floor_plan_name',
+                    //     'elevation_name_file',
+                    //     'elevation_name_thumbnail',
+                    //     'elevation_name',
+                    //     'sectional_name_file',
+                    //     'sectional_name_thumbnail',
+                    //     'sectional_name',
+                    //     'design_drawing_all_name_file',
+                    //     'design_drawing_all_name_thumbnail',
+                    //     'design_drawing_all_name',
+                    //     'structural_floor_plan_name_file',
+                    //     'structural_floor_plan_name_thumbnail',
+                    //     'structural_floor_plan_name',
+                    //     'machinery_equipment_diagram_all_name_file',
+                    //     'machinery_equipment_diagram_all_name_thumbnail',
+                    //     'machinery_equipment_diagram_all_name',
+                    //     'bim_drawing_name_file',
+                    //     'bim_drawing_name_thumbnail',
+                    //     'bim_drawing_name',
+                    //     'meeting_log_name_file',
+                    //     'meeting_log_name_thumbnail',
+                    //     'meeting_log_name',
+                    // ];
 
                     // foreach ($requiredKeys as $key) {
                     //     if (!array_key_exists($key, $filePaths)) {
@@ -382,7 +382,7 @@ class Project_nameController extends Controller
             //         //     'download_url' => route('download', ['id' => $file->id]),
             //         // ]);
         } catch (\Exception $e) {
-            Log::error("エラーupload: " . $e->getMessage());
+            Log::error("エラーupload transaction: " . $e->getMessage());
             return response()->json(['error' => 'ファイルの処理中にエラーが発生しました。upload'], 500);
         }
     }
