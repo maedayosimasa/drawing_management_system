@@ -20,8 +20,8 @@ return new class extends Migration
             $table->date('construction_period_start')->nullable();
             $table->date('construction_period_end')->nullable();
             $table->date('completion_date')->nullable();
-            $table->integer('constract_amount')->nullable();
-            $table->integer('use')->nullable();
+            $table->bigInteger('constract_amount')->nullable();
+            $table->string('use')->nullable();
             $table->integer('site_area')->nullable();
             $table->integer('building_area')->nullable();
             $table->integer('total_floor_area')->nullable();
